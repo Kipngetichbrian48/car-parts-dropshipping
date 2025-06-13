@@ -6,21 +6,23 @@
     <title>Car Parts Dropshipping</title>
     <link rel="stylesheet" href="/css/style.css">
     <link rel="icon" type="image/png" href="/images/favicon.png">
+    <link href="https://fonts.googleapis.com/css2?family=Racing+Sans+One&display=swap" rel="stylesheet">
 </head>
 <body>
     <header>
-        <h1>Car Parts Store</h1>
+        <h1>Rev Up Your Ride with Premium Car Parts!</h1>
+        <p>Discover high-performance auto components for every car enthusiast. Unleash the power of your vehicle today!</p>
     </header>
     <main>
         <section id="productGrid"></section>
         <section id="cart" style="display: none;">
-            <h2>Cart</h2>
+            <h2>Your Gear Cart</h2>
             <ul id="cartItems"></ul>
             <p>Total: $<span id="cartTotal">0.00</span></p>
             <button id="checkoutButton">Checkout with PayPal</button>
         </section>
         <section id="checkout" style="display: none;">
-            <h2>Checkout</h2>
+            <h2>Finalize Your Upgrade</h2>
             <form id="checkoutForm">
                 <label>Name: <input type="text" name="name" required autocomplete="name"></label>
                 <label>Phone: <input type="tel" name="phone" required autocomplete="tel"></label>
@@ -29,12 +31,13 @@
                 <label>Province: <input type="text" name="province" required autocomplete="address-level1"></label>
                 <label>Country Code: <input type="text" name="countryCode" required autocomplete="country"></label>
                 <label>Zip: <input type="text" name="zip" required autocomplete="postal-code"></label>
-                <button type="submit">Pay Now</button>
+                <button type="submit">Ignite Your Purchase!</button>
             </form>
         </section>
     </main>
     <script src="https://www.paypal.com/sdk/js?client-id=ARHCurM20tcpYdV026Dzfj3x7JelmaAUpitT-qNwrI4GSNkTuZmgBO-dEwu3z-FjwitHJnQPa0SsHSCG&currency=USD"></script>
     <script type="module" src="/js/products.js"></script>
     <script type="module" src="/js/script.js"></script>
+    <!-- <script src="https://www.paypal.com/sdk/js?client-id=ARHCurM20tcpYdV026Dzfj3x7JelmaAUpitT-qNwrI4GSNkTuZmgBO-dEwu3z-FjwitHJnQPa0SsHSCG&currency=USD"></script> -->
 </body>
 </html>

@@ -4,24 +4,26 @@ let cart = [];
 
 // Set up MutationObserver to monitor DOM changes asynchronously
 const observer = new MutationObserver((mutations) => {
+    let needsUpdate = false;
     mutations.forEach((mutation) => {
         if (mutation.type === 'childList' && mutation.addedNodes.length) {
             console.log('DOM mutation detected - New nodes added:', mutation.addedNodes);
-            initializeProductButtons(); // Re-attach event listeners to new nodes
+            needsUpdate = true;
         }
     });
+    if (needsUpdate) {
+        initializeProductButtons();
+    }
 });
 
-// Start observing the document body and product grid for changes
+// Start observing and disconnect after initial setup
 document.addEventListener('DOMContentLoaded', async () => {
     const productGrid = document.getElementById('productGrid');
     if (productGrid) {
-        observer.observe(document.body, { childList: true, subtree: true }); // Broad observation
-        observer.observe(productGrid, { childList: true, subtree: true }); // Specific to product grid
+        observer.observe(document.body, { childList: true, subtree: true });
+        await loadProducts();
+        observer.disconnect(); // Disconnect after initial load
     }
-
-    // Load products initially
-    await loadProducts();
 
     // Checkout button event
     document.getElementById('checkoutButton').addEventListener('click', () => {
@@ -99,7 +101,7 @@ async function loadProducts() {
         productGrid.innerHTML = ''; // Clear existing content
         products.forEach(product => {
             const div = document.createElement('div');
-            div.innerHTML = `<h3>${product.title || product.id}</h3><img src="${product.image}" alt="${product.title || product.id}" width="100"><button class="add-to-cart" data-id="${product.id}">Add to Cart</button>`;
+            div.innerHTML = `<h3>${product.title || 'Unnamed Part'}</h3><img src="${product.image}" alt="${product.title || 'Car Part'}" width="100"><button class="add-to-cart" data-id="${product.id}">Add to Cart</button>`;
             productGrid.appendChild(div);
         });
         initializeProductButtons(); // Attach initial event listeners

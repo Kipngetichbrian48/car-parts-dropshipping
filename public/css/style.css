@@ -1,23 +1,97 @@
 body {
-    font-family: Arial, sans-serif;
+    font-family: 'Arial', sans-serif;
     margin: 0;
     padding: 0;
+    background-color: #1a1a1a; /* Dark background for a garage vibe */
+    color: #e0e0e0; /* Light text for contrast */
 }
 header {
-    background-color: #333;
+    background-color: #2a2a72; /* Deep blue like a car paint */
     color: white;
-    padding: 10px;
+    padding: 20px;
     text-align: center;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+}
+header h1 {
+    margin: 0;
+    font-size: 2.5em;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+}
+header p {
+    font-size: 1.2em;
+    margin: 5px 0;
 }
 main {
     padding: 20px;
+    max-width: 1200px;
+    margin: 0 auto;
 }
 #productGrid div {
-    border: 1px solid #ccc;
-    padding: 10px;
+    border: 2px solid #ff4500; /* Orange trim like a race car */
+    padding: 15px;
     margin: 10px;
     display: inline-block;
+    background-color: #333;
+    border-radius: 8px;
+    transition: transform 0.3s;
+}
+#productGrid div:hover {
+    transform: scale(1.05); /* Zoom effect on hover */
+    box-shadow: 0 0 10px #ff4500;
+}
+#productGrid h3 {
+    color: #ffcc00; /* Gold for a premium feel */
+    margin: 0 0 10px;
+}
+#productGrid img {
+    max-width: 100%;
+    height: auto;
+}
+#productGrid button {
+    background-color: #ff4500; /* Orange for action */
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    cursor: pointer;
+    border-radius: 4px;
+}
+#productGrid button:hover {
+    background-color: #e03a00;
 }
 #cart, #checkout {
     margin-top: 20px;
+    background-color: #222;
+    padding: 15px;
+    border-radius: 8px;
+}
+#cart h2, #checkout h2 {
+    color: #ffcc00;
+    margin-top: 0;
+}
+#cart ul {
+    list-style: none;
+    padding: 0;
+}
+#cartTotal {
+    font-weight: bold;
+    color: #ff4500;
+}
+#checkoutButton, #checkoutForm button {
+    background-color: #ff4500;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    cursor: pointer;
+    border-radius: 4px;
+}
+#checkoutButton:hover, #checkoutForm button:hover {
+    background-color: #e03a00;
+}
+@media (max-width: 600px) {
+    #productGrid div {
+        display: block;
+        width: 90%;
+        margin: 10px auto;
+    }
 }
