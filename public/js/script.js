@@ -124,11 +124,13 @@ function addToCartHandler(e) {
 
 window.addToCart = async (productId) => {
     const product = (await fetchProducts()).find(p => p.id === productId);
-    if (product) {
-        cart.push(product);
+    if (product && product.price) { //Ensure price exists}) {
+        cart.push({ ...product }); // Create a new object to avoid reference issues
         updateCart();
+    } else {
+        console.error(`Product ${productId} has no price or is invalid`);
     }
-};
+}
 
 function updateCart() {
     const cartItems = document.getElementById('cartItems');
