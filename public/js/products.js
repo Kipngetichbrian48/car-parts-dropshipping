@@ -1,15 +1,15 @@
-async function fetchProducts() {
+// public/js/products.js
+export async function fetchProducts() {
     try {
         const response = await fetch('/data/products.json');
-        const products = await response.json();
-        // Add a default price since it's not in CSV
-        return products.map(product => ({
-            ...product,
-            price: 29.99 // Default price; adjust as needed
-        }));
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const data = await response.json();
+        console.log('Fetched products:', data); // Debug log to verify data
+        return data; // Returns array of products with id, title, image, price
     } catch (error) {
         console.error('Error fetching products:', error);
-        return [];
+        return []; // Return empty array on failure to avoid breaking the app
     }
 }
-export { fetchProducts };
