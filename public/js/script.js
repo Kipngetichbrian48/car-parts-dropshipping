@@ -143,5 +143,6 @@ function updateCart() {
         });
         document.getElementById('cartTotal').textContent = cart.reduce((sum, item) => sum + item.price, 0).toFixed(2);
         document.getElementById('cart').style.display = 'block';
+        console.log('Cart:', cart);
     }
 }
