@@ -95,3 +95,27 @@ main {
         margin: 10px auto;
     }
 }
+#paypal-button-container {
+    margin: 10px 0;
+}
+#ignitePurchase {
+    padding: 10px 20px;
+    background-color: #ff9900;
+    border: none;
+    color: white;
+    cursor: pointer;
+}
+#productGrid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+#productGrid .product {
+    border: 1px solid #ccc;
+    padding: 10px;
+    text-align: center;
+}
+#paypal-button-container {
+    margin: 10px 0;
+    display: block !important;
+}
