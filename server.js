@@ -1,5 +1,5 @@
 require('dotenv').config();
-
+console.log('Dotenv loaded:', process.env);
 console.log('PayPal Client ID:', process.env.PAYPAL_CLIENT_ID);
 console.log('PayPal API URL:', process.env.PAYPAL_API || 'https://api-m.sandbox.paypal.com');
 
@@ -20,8 +20,8 @@ app.get('/', (req, res) => {
     } else {
         console.log('Rendered PayPal Client ID:', clientId);
     }
-    res.render('index.html', {
-        paypalClientId: clientId || 'YOUR_SANDBOX_CLIENT_ID_FALLBACK',
+    res.render('index', {
+        paypalClientId: 'ARHCurM20tcpYdV026Dzfj3x7JelmaAUpitT-qNwrI4GSNkTuZmgBO-dEwu3z-FjwitHJnQPa0SsHSCG',
         paypalApi: process.env.PAYPAL_API || 'https://api-m.sandbox.paypal.com'
     });
 });

@@ -75,7 +75,9 @@ function updateCart() {
 
 function setupPayPalButtons() {
     console.log('Setting up PayPal buttons...');
-    if (window.paypal) {
+    if (typeof paypal == 'undefined') {
+        console.error('PayPal SDK not loaded, retrying...');
+    } else {
         console.log('PayPal SDK loaded, rendering buttons...');
         window.paypal.Buttons({
             createOrder: (data, actions) => {
@@ -176,9 +178,5 @@ function setupPayPalButtons() {
         } else {
             console.error('Ignite button not found');
         }
-    } else {
-        console.error('PayPal SDK not loaded, retrying in 1 second...');
-        setTimeout(setupPayPalButtons, 1000);
-        return;
     }
 }
