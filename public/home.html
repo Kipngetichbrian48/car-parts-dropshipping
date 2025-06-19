@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Car Parts Dropshipping</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <script src="https://www.sandbox.paypal.com/sdk/js?client-id=ARHCurM20tcpYdV026Dzfj3x7JelmaAUpitT-qNwrI4GSNkTuZmgBO-dEwu3z-FjwitHJnQPa0SsHSCG" defer></script>
+</head>
+<body>
+    <header>
+        <h1>REV UP YOUR RIDE WITH PREMIUM CAR PARTS!</h1>
+    </header>
+    <main>
+        <section id="productGrid" class="product-grid">
+            <!-- Products will be populated by products.js -->
+        </section>
+        <aside id="cart">
+            <h2>Your Cart</h2>
+            <ul id="cartItems"></ul>
+            <p>Total: $<span id="cartTotal">0.00</span></p>
+            <div id="paypal-button-container"></div> <!-- Standalone PayPal button for cart -->
+        </aside>
+        <section id="checkout" style="display:block;">
+            <h2>Finalize Your Upgrade</h2>
+            <form id="checkoutForm">
+                <input type="text" id="name" placeholder="Name" required><br>
+                <input type="tel" id="phone" placeholder="Phone" required><br>
+                <input type="text" id="address" placeholder="Address" required><br>
+                <input type="text" id="city" City" required><br>
+                <input type="text" id="province" placeholder="Province" required><br>
+                <input type="text" id="countryCode" placeholder="Country Code" required><br>
+                <input type="text" id="zip" placeholder="Zip" required><br>
+                <button type="button" id="ignitePurchase">Ignite Your Purchase!</button>
+            </form>
+        </section>
+    </main>
+
+    <!-- Client-side JavaScript -->
+    <script type="module" src="/js/products.js"></script>
+    <script type="module" src="/js/script.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('PayPal SDK check:', typeof paypal);
+            if (typeof paypal === 'undefined') {
+                console.error('PayPal SDK not loaded');
+                return;
+            }
+            // Individual product PayPal buttons will be handled by products.js
+            // Cart PayPal button will be handled by script.js
+        });
+    </script>
+</body>
+</html>
