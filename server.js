@@ -2,6 +2,7 @@ require('dotenv').config();
 console.log('Dotenv loaded:', process.env);
 console.log('PayPal Client ID from env:', process.env.PAYPAL_CLIENT_ID);
 console.log('PayPal API URL:', process.env.PAYPAL_API || 'https://api-m.sandbox.paypal.com');
+console.log('Assigned port:', process.env.port); // Debug port
 
 const express = require('express');
 const path = require('path');
@@ -36,7 +37,7 @@ app.get('/', (req, res) => {
     });
 });
 
-const port = process.env.PORT || 3000;
+const port = process.env.PORT; // Use Render's assigned port
 app.listen(port, () => {
     console.log(`Server running on port ${port}`);
 });
