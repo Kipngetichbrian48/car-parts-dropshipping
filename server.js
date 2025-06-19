@@ -1,6 +1,6 @@
 require('dotenv').config();
 console.log('Dotenv loaded:', process.env);
-console.log('PayPal Client ID:', process.env.PAYPAL_CLIENT_ID);
+console.log('PayPal Client ID from env:', process.env.PAYPAL_CLIENT_ID);
 console.log('PayPal API URL:', process.env.PAYPAL_API || 'https://api-m.sandbox.paypal.com');
 
 const express = require('express');
@@ -8,7 +8,7 @@ const path = require('path');
 const fs = require('fs');
 const app = express();
 
-app.use(express.static('public')); // Serve static files first
+app.use(express.static('public'));
 
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
@@ -34,10 +34,6 @@ app.get('/', (req, res) => {
         paypalApi: process.env.PAYPAL_API || 'https://api-m.sandbox.paypal.com',
         products: products
     });
-});
-
-app.get('/home', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'home.html'));
 });
 
 const port = process.env.PORT || 3000;

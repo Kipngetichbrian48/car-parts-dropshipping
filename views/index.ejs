@@ -1,6 +1,8 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Car Parts Dropshipping</title>
   <link rel="stylesheet" href="/css/style.css">
   <script src="https://www.sandbox.paypal.com/sdk/js?client-id=<%= clientId %>" defer></script>
@@ -25,7 +27,7 @@
       <h2>Your Cart</h2>
       <ul id="cartItems"></ul>
       <p>Total: $<span id="cartTotal">0.00</span></p>
-      <div id="paypal-button-container"></div> <!-- Standalone PayPal button for cart -->
+      <div id="paypal-button-container"></div>
     </aside>
     <section id="checkout" style="display:block;">
       <h2>Finalize Your Upgrade</h2>
@@ -42,12 +44,9 @@
     </section>
   </main>
 
-  <!-- Define products data as JSON -->
   <script type="application/json" id="products-data">
     <%= JSON.stringify(products) %>
   </script>
-
-  <!-- Client-side JavaScript -->
   <script type="module" src="/js/products.js"></script>
   <script type="module" src="/js/script.js"></script>
   <script>
@@ -57,7 +56,6 @@
         console.error('PayPal SDK not loaded');
         return;
       }
-      // Individual product PayPal buttons
       products.forEach(product => {
         paypal.Buttons({
           createOrder: function(data, actions) {
@@ -79,7 +77,6 @@
           }
         }).render(`#paypal-button-container-${product.title.replace(/[^a-zA-Z0-9]/g, '-')}`);
       });
-      // Initialize cart and setup standalone PayPal button (handled by script.js)
     });
   </script>
 </body>
