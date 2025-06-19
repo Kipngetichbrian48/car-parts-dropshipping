@@ -5,13 +5,22 @@ console.log('PayPal API URL:', process.env.PAYPAL_API || 'https://api-m.sandbox.
 
 const express = require('express');
 const path = require('path');
+const fs = require('fs');
 const app = express();
 
-app.engine('html', require('ejs').renderFile);
-app.set('view engine', 'ejs');
-app.set('views', path.join(__dirname, 'public'));
+app.use(express.static('public')); // Serve static files first
 
-app.use(express.static('public'));
+app.set('view engine', 'ejs');
+app.set('views', path.join(__dirname, 'views'));
+console.log('Views directory:', app.get('views'));
+
+let products;
+try {
+    products = JSON.parse(fs.readFileSync(path.join(__dirname, 'public', 'data', 'products.json'), 'utf8'));
+} catch (err) {
+    console.error('Error loading products.json:', err.message);
+    products = [];
+}
 
 app.get('/', (req, res) => {
     const clientId = process.env.PAYPAL_CLIENT_ID;
@@ -21,9 +30,14 @@ app.get('/', (req, res) => {
         console.log('Rendered PayPal Client ID:', clientId);
     }
     res.render('index', {
-        paypalClientId: 'ARHCurM20tcpYdV026Dzfj3x7JelmaAUpitT-qNwrI4GSNkTuZmgBO-dEwu3z-FjwitHJnQPa0SsHSCG',
-        paypalApi: process.env.PAYPAL_API || 'https://api-m.sandbox.paypal.com'
+        clientId: clientId || 'ARHCurM20tcpYdV026Dzfj3x7JelmaAUpitT-qNwrI4GSNkTuZmgBO-dEwu3z-FjwitHJnQPa0SsHSCG',
+        paypalApi: process.env.PAYPAL_API || 'https://api-m.sandbox.paypal.com',
+        products: products
     });
+});
+
+app.get('/home', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'home.html'));
 });
 
 const port = process.env.PORT || 3000;
@@ -33,24 +47,4 @@ app.listen(port, () => {
 
 process.on('uncaughtException', (err) => {
     console.error('Uncaught Exception:', err);
-});
-// app.js or index.js
-// Ensure the PayPal Client ID is logged and available in the EJS template
-app.get('/', (req, res) => {
-    const clientId = process.env.PAYPAL_CLIENT_ID;
-    if (!clientId) {
-        console.error('PAYPAL_CLIENT_ID is not set in environment');
-    } else {
-        console.log('Rendered PayPal Client ID:', clientId);
-    }
-    res.render('index.html', {
-        paypalClientId: clientId || 'YOUR_SANDBOX_CLIENT_ID_FALLBACK',
-        paypalApi: process.env.PAYPAL_API || 'https://api-m.sandbox.paypal.com'
-    }, (err, html) => {
-        if (err) {
-            console.error('EJS Rendering Error:', err);
-        } else {
-            console.log('EJS Rendered HTML snippet:', html.substring(0, 100)); // First 100 chars
-        }
-    });
 });
