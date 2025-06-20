@@ -5,7 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Car Parts Dropshipping</title>
   <link rel="stylesheet" href="/css/style.css">
-  <script src="https://www.sandbox.paypal.com/sdk/js?client-id=<%= clientId %>" defer></script>
+  <!-- Debug output moved to the body -->
+  <script src="https://www.sandbox.paypal.com/sdk/js?client-id=<%= clientId %>&currency=USD" defer></script>
 </head>
 <body>
   <header>
@@ -43,7 +44,8 @@
       </form>
     </section>
   </main>
-
+  <!-- Debug output -->
+   <p>Client ID: <%= clientId %></p>
   <script type="application/json" id="products-data">
     <%= JSON.stringify(products) %>
   </script>
@@ -62,7 +64,8 @@
             return actions.order.create({
               purchase_units: [{
                 amount: {
-                  value: product.price.toString()
+                  value: product.price.toString(),
+                  currency_code: 'USD' // Match currency in script tag
                 }
               }]
             });
