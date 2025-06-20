@@ -2,14 +2,17 @@ require('dotenv').config();
 console.log('Dotenv loaded:', process.env);
 console.log('PayPal Client ID from env:', process.env.PAYPAL_CLIENT_ID);
 console.log('PayPal API URL:', process.env.PAYPAL_API || 'https://api-m.sandbox.paypal.com');
-console.log('Assigned port:', process.env.port); // Debug port
+console.log('Assigned PORT:', process.env.PORT);
 
 const express = require('express');
 const path = require('path');
 const fs = require('fs');
 const app = express();
 
-app.use(express.static('public'));
+// Serve static files explicitly for Vercel
+app.use('/css', express.static(path.join(__dirname, 'public', 'css')));
+app.use('/js', express.static(path.join(__dirname, 'public', 'js')));
+app.use('/data', express.static(path.join(__dirname, 'public', 'data')));
 
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
@@ -27,6 +30,8 @@ app.get('/', (req, res) => {
     const clientId = process.env.PAYPAL_CLIENT_ID;
     if (!clientId) {
         console.error('PAYPAL_CLIENT_ID is not set in environment');
+        res.status(500).send('Environment variable PAYPAL_CLIENT_ID is missing');
+        return;
     } else {
         console.log('Rendered PayPal Client ID:', clientId);
     }
@@ -37,10 +42,8 @@ app.get('/', (req, res) => {
     });
 });
 
-// Export for Vercel serverless
 module.exports = app;
 
-// Local development
 if (require.main === module) {
     const port = process.env.PORT || 10000;
     app.listen(port, () => {
