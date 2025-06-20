@@ -1,15 +1,16 @@
-// public/js/products.js
-export async function fetchProducts() {
-    try {
-        const response = await fetch('/data/products.json');
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        const data = await response.json();
-        console.log('Fetched products:', data); // Debug log to verify data
-        return data; // Returns array of products with id, title, image, price
-    } catch (error) {
-        console.error('Error fetching products:', error);
-        return []; // Return empty array on failure to avoid breaking the app
-    }
+// Export the addToCart function
+export function addToCart(productId) {
+  console.log('Added to cart:', productId);
+  // Add your cart logic here (e.g., update cart UI, store in localStorage)
+  const cartItems = document.getElementById('cartItems');
+  const li = document.createElement('li');
+  li.textContent = `Product ID: ${productId} - $0.00`; // Adjust price logic as needed
+  cartItems.appendChild(li);
+  updateCartTotal();
+}
+
+// Example helper function (optional)
+function updateCartTotal() {
+  const cartTotal = document.getElementById('cartTotal');
+  cartTotal.textContent = '10.00'; // Replace with dynamic total calculation
 }

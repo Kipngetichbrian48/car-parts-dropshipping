@@ -50,6 +50,11 @@
     <script type="application/json" id="products-data">
       <%= JSON.stringify(products) %>
     </script>
+    const productsData = document.getElementById('products-data').textContent;
+    const products = JSON.parse(productsData);
+    // Make products available globally or pass to module
+    window.products = products; // For global access
+    </script>
     <script type="module" src="/js/products.js"></script>
     <script type="module" src="/js/script.js"></script>
     <script>

@@ -1,5 +1,9 @@
 import { fetchProducts } from './products.js';
 
+// Additional script logic (optional)
+console.log('script.js loaded');
+// Other functions or event listeners can go here
+
 let cart = [];
 
 document.addEventListener('DOMContentLoaded', async () => {
