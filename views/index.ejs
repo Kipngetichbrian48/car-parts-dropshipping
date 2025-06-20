@@ -22,7 +22,7 @@
           <img src="<%= product.image %>" alt="<%= product.title %>">
           <h3><%= product.title %></h3>
           <p>$<%= product.price %></p>
-          <button onclick="addToCart('<%= product.id %>')">Add to Cart</button>
+          <button data-product-id="<%= product.id %>">Add to Cart</button>
           <div id="paypal-button-container-<%= product.title.replace(/[^a-zA-Z0-9]/g, '-') %>" class="paypal-button"></div>
         </div>
       <% }); %>
@@ -50,10 +50,15 @@
     <script type="application/json" id="products-data">
       <%= JSON.stringify(products) %>
     </script>
+    <script>
     const productsData = document.getElementById('products-data').textContent;
     const products = JSON.parse(productsData);
     // Make products available globally or pass to module
     window.products = products; // For global access
+    </script>
+    <!-- Debug -->
+    <script>
+     console.log('Client ID from template:', '<%= clientId %>');
     </script>
     <script type="module" src="/js/products.js"></script>
     <script type="module" src="/js/script.js"></script>
