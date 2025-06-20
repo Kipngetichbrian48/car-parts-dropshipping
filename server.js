@@ -1,56 +1,38 @@
-require('dotenv').config();
-console.log('Dotenv loaded:', process.env);
-console.log('PayPal Client ID from env:', process.env.PAYPAL_CLIENT_ID);
-console.log('PayPal API URL:', process.env.PAYPAL_API || 'https://api-m.sandbox.paypal.com');
-console.log('Assigned PORT:', process.env.PORT);
+import express from 'express';
+import path from 'path';
+import dotenv from 'dotenv';
+import { readFileSync } from 'fs';
 
-const express = require('express');
-const path = require('path');
-const fs = require('fs');
+// Load environment variables
+dotenv.config();
+
+// Initialize Express app
 const app = express();
+const port = process.env.PORT || 10000;
 
-// Serve static files explicitly for Vercel
-app.use('/css', express.static(path.join(__dirname, 'public', 'css')));
-app.use('/js', express.static(path.join(__dirname, 'public', 'js')));
-app.use('/data', express.static(path.join(__dirname, 'public', 'data')));
-
+// Set EJS as the view engine
 app.set('view engine', 'ejs');
-app.set('views', path.join(__dirname, 'views'));
-console.log('Views directory:', app.get('views'));
+app.set('views', path.resolve('views'));
 
-let products;
-try {
-    products = JSON.parse(fs.readFileSync(path.join(__dirname, 'public', 'data', 'products.json'), 'utf8'));
-} catch (err) {
-    console.error('Error loading products.json:', err.message);
-    products = [];
-}
+// Serve static files
+app.use('/css', express.static(path.join('public', 'css')));
+app.use('/js', express.static(path.join('public', 'js')));
+app.use('/data', express.static(path.join('public', 'data')));
 
+// Route to render the index page
 app.get('/', (req, res) => {
-    const clientId = process.env.PAYPAL_CLIENT_ID;
-    if (!clientId) {
-        console.error('PAYPAL_CLIENT_ID is not set in environment');
-        res.status(500).send('Environment variable PAYPAL_CLIENT_ID is missing');
-        return;
-    } else {
-        console.log('Rendered PayPal Client ID:', clientId);
-    }
-    res.render('index', {
-        clientId: clientId || 'ARHCurM20tcpYdV026Dzfj3x7JelmaAUpitT-qNwrI4GSNkTuZmgBO-dEwu3z-FjwitHJnQPa0SsHSCG',
-        paypalApi: process.env.PAYPAL_API || 'https://api-m.sandbox.paypal.com',
-        products: products
-    });
+  try {
+    // Read products from JSON file
+    const productsData = readFileSync(path.join('public', 'data', 'products.json'), 'utf8');
+    const products = JSON.parse(productsData);
+    res.render('index', { products, clientId: process.env.PAYPAL_CLIENT_ID });
+  } catch (error) {
+    console.error('Error reading products.json:', error);
+    res.status(500).send('Internal Server Error');
+  }
 });
 
-module.exports = app;
-
-if (require.main === module) {
-    const port = process.env.PORT || 10000;
-    app.listen(port, () => {
-        console.log(`Server running on port ${port}`);
-    });
-}
-
-process.on('uncaughtException', (err) => {
-    console.error('Uncaught Exception:', err);
+// Start the server
+app.listen(port, () => {
+  console.log(`Server running on port ${port}`);
 });
