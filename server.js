@@ -37,10 +37,16 @@ app.get('/', (req, res) => {
     });
 });
 
-const port = process.env.PORT; // Use Render's assigned port
-app.listen(port, () => {
-    console.log(`Server running on port ${port}`);
-});
+// Export for Vercel serverless
+module.exports = app;
+
+// Local development
+if (require.main === module) {
+    const port = process.env.PORT || 10000;
+    app.listen(port, () => {
+        console.log(`Server running on port ${port}`);
+    });
+}
 
 process.on('uncaughtException', (err) => {
     console.error('Uncaught Exception:', err);
