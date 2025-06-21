@@ -1,7 +1,7 @@
 import express from 'express';
 import path from 'path';
 import dotenv from 'dotenv';
-import { readFileSync } from 'fs';
+import { readFileSync, existsSync } from 'fs';
 
 dotenv.config();
 
@@ -17,15 +17,24 @@ app.use('/data', express.static(path.join('public', 'data')));
 
 app.get('/', (req, res) => {
   try {
-    // Only log in non-production environments
-    if (process.env.NODE_ENV !== 'production') {
-      console.log('Attempting to read products.json');
+    const productsPath = path.join('public', 'data', 'products.json');
+    if (!existsSync(productsPath)) {
+      throw new Error('products.json file not found');
     }
-    const productsData = readFileSync(path.join('public', 'data', 'products.json'), 'utf8');
     if (process.env.NODE_ENV !== 'production') {
-      console.log('Raw products data:', productsData);
+      console.log('Attempting to read products.json from:', productsPath);
+    }
+    const productsData = readFileSync(productsPath, 'utf8');
+    if (!productsData) {
+      throw new Error('products.json is empty');
+    }
+    if (process.env.NODE_ENV !== 'production') {
+      console.log('Raw products data:', productsData.slice(0, 100));
     }
     const rawProducts = JSON.parse(productsData);
+    if (!Array.isArray(rawProducts) || rawProducts.length === 0) {
+      throw new Error('products.json contains no valid products');
+    }
     if (process.env.NODE_ENV !== 'production') {
       console.log('Parsed raw products:', rawProducts);
     }
@@ -48,7 +57,6 @@ app.get('/', (req, res) => {
     if (process.env.NODE_ENV !== 'production') {
       console.log('Rendered products:', products);
     }
-    // Explicitly set Content-Type to ensure HTML response
     res.set('Content-Type', 'text/html');
     res.render('index', { products, clientId: process.env.PAYPAL_CLIENT_ID }, (err, html) => {
       if (err) {
@@ -56,19 +64,23 @@ app.get('/', (req, res) => {
         res.status(500).set('Content-Type', 'text/html').render('error', { message: 'Rendering error. Please try again.' });
         return;
       }
-      // Log the first 50 characters of the rendered HTML for debugging
       if (process.env.NODE_ENV !== 'production') {
         console.log('Rendered HTML starts with:', html.slice(0, 50));
       }
       res.send(html);
     });
   } catch (error) {
-    console.error('Error processing products.json:', error);
-    // Render error page with proper DOCTYPE
-    res.status(500).set('Content-Type', 'text/html').render('error', { message: 'Unable to load products. Please try again later.' });
+    console.error('Error processing request:', error.message);
+    res.status(500).set('Content-Type', 'text/html').render('error', { message: `Unable to load products: ${error.message}` });
   }
 });
 
-app.listen(port, () => {
-  console.log(`Server running on port ${port}`);
-});
+// Export the app for Vercel
+export default app;
+
+// Start the server for local development
+if (process.env.NODE_ENV !== 'production') {
+  app.listen(port, () => {
+    console.log(`Server running on port ${port}`);
+  });
+}
