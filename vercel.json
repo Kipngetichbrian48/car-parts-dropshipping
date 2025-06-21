@@ -20,6 +20,10 @@
       "dest": "/public/data/$1"
     },
     {
+      "src": "/",
+      "dest": "server.js"
+    },
+    {
       "src": "/(.*)",
       "dest": "server.js"
     }

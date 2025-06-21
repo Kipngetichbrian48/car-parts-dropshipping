@@ -1,6 +1,22 @@
+# Environment variables
 .env
+
+# Node.js dependencies
 node_modules/
-.env
+
+# Logs
 *.log
+
+# Build artifacts
 dist/
-.vercel
+.vercel/
+
+# macOS system files
+.DS_Store
+
+# Databases
+*.sqlite
+
+# Ignore all JSON files except specific ones
+*.json
+!public/data/products.json

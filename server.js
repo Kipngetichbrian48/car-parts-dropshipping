@@ -17,11 +17,18 @@ app.use('/data', express.static(path.join('public', 'data')));
 
 app.get('/', (req, res) => {
   try {
-    console.log('Attempting to read products.json');
+    // Only log in non-production environments
+    if (process.env.NODE_ENV !== 'production') {
+      console.log('Attempting to read products.json');
+    }
     const productsData = readFileSync(path.join('public', 'data', 'products.json'), 'utf8');
-    console.log('Raw products data:', productsData);
+    if (process.env.NODE_ENV !== 'production') {
+      console.log('Raw products data:', productsData);
+    }
     const rawProducts = JSON.parse(productsData);
-    console.log('Parsed raw products:', rawProducts);
+    if (process.env.NODE_ENV !== 'production') {
+      console.log('Parsed raw products:', rawProducts);
+    }
     const products = rawProducts.map(product => {
       const price = parseFloat(product.price);
       if (isNaN(price)) {
@@ -38,11 +45,27 @@ app.get('/', (req, res) => {
     if (products.length === 0) {
       throw new Error('No valid products found after parsing');
     }
-    console.log('Rendered products:', products);
-    res.render('index', { products, clientId: process.env.PAYPAL_CLIENT_ID });
+    if (process.env.NODE_ENV !== 'production') {
+      console.log('Rendered products:', products);
+    }
+    // Explicitly set Content-Type to ensure HTML response
+    res.set('Content-Type', 'text/html');
+    res.render('index', { products, clientId: process.env.PAYPAL_CLIENT_ID }, (err, html) => {
+      if (err) {
+        console.error('Error rendering EJS:', err);
+        res.status(500).set('Content-Type', 'text/html').render('error', { message: 'Rendering error. Please try again.' });
+        return;
+      }
+      // Log the first 50 characters of the rendered HTML for debugging
+      if (process.env.NODE_ENV !== 'production') {
+        console.log('Rendered HTML starts with:', html.slice(0, 50));
+      }
+      res.send(html);
+    });
   } catch (error) {
     console.error('Error processing products.json:', error);
-    res.status(500).send('Internal Server Error: Unable to process product data');
+    // Render error page with proper DOCTYPE
+    res.status(500).set('Content-Type', 'text/html').render('error', { message: 'Unable to load products. Please try again later.' });
   }
 });
 
