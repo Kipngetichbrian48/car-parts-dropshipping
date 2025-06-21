@@ -5,7 +5,9 @@ console.log('script.js loaded');
 document.addEventListener('DOMContentLoaded', () => {
   console.log('DOM fully loaded, addToCart is available:', typeof addToCart === 'function');
 
-  document.querySelectorAll('button[data-product-id]').forEach(button => {
+  const buttons = document.querySelectorAll('button[data-product-id]');
+  console.log('Found buttons:', buttons.length);
+  buttons.forEach(button => {
     button.addEventListener('click', () => {
       const productId = button.getAttribute('data-product-id');
       console.log('Button clicked, calling addToCart with productId:', productId);

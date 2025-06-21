@@ -5,11 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Car Parts Dropshipping</title>
   <link rel="stylesheet" href="/css/style.css">
-  <script src="https://www.sandbox.paypal.com/sdk/js?client-id=<%= clientId %>&currency=USD" defer></script>
-  <!-- Debug -->
-   <script>
-    console.log('Client ID from template:', '<%= clientId %>');
-  </script>
+  <!-- Removed defer PayPal script to handle dynamically -->
 </head>
 <body>
   <header>
@@ -21,9 +17,8 @@
         <div class="product-card">
           <img src="<%= product.image %>" alt="<%= product.title %>">
           <h3><%= product.title %></h3>
-          <p>$<%= product.price %></p>
+          <p>$<%= product.price.toFixed(2) %></p>
           <button data-product-id="<%= product.id %>">Add to Cart</button>
-          <div id="paypal-button-container-<%= product.title.replace(/[^a-zA-Z0-9]/g, '-') %>" class="paypal-button"></div>
         </div>
       <% }); %>
     </section>
@@ -31,7 +26,7 @@
       <h2>Your Cart</h2>
       <ul id="cartItems"></ul>
       <p>Total: $<span id="cartTotal">0.00</span></p>
-      <div id="paypal-button-container"></div>
+      <div id="cartPaypalButton"></div>
     </aside>
     <section id="checkout" style="display:block;">
       <h2>Finalize Your Upgrade</h2>
@@ -46,36 +41,63 @@
         <button type="button" id="ignitePurchase">Ignite Your Purchase!</button>
       </form>
     </section>
-    </main>
-    <script type="application/json" id="products-data">
-      <%= JSON.stringify(products) %>
-    </script>
-    <script>
-    const productsData = document.getElementById('products-data').textContent;
-    const products = JSON.parse(productsData);
-    // Make products available globally or pass to module
-    window.products = products; // For global access
-    </script>
-    <!-- Debug -->
-    <script>
-     console.log('Client ID from template:', '<%= clientId %>');
-    </script>
-    <script type="module" src="/js/products.js"></script>
-    <script type="module" src="/js/script.js"></script>
-    <script>
-      document.addEventListener('DOMContentLoaded', () => {
-        console.log('PayPal SDK check:', typeof paypal);
-        if (typeof paypal === 'undefined') {
-          console.error('PayPal SDK not loaded');
-          return;
-        }
-        products.forEach(product => {
+  </main>
+
+  <script type="application/json" id="products-data">
+    <%- JSON.stringify(products) %>
+  </script>
+  <script>
+    try {
+      const productsData = document.getElementById('products-data').textContent;
+      window.products = JSON.parse(productsData);
+      console.log('Products loaded:', window.products);
+    } catch (error) {
+      console.error('Error parsing products data:', error);
+    }
+  </script>
+
+  <script type="module" src="/js/products.js"></script>
+  <script type="module" src="/js/script.js"></script>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const clientId = '<%= clientId %>';
+      console.log('Client ID for PayPal:', clientId);
+
+      console.log('PayPal SDK check:', typeof paypal);
+      let paypalButtonInitialized = false; // Flag to track button initialization
+
+      if (typeof paypal === 'undefined') {
+        console.log('Attempting to load PayPal SDK with clientId:', clientId);
+        const script = document.createElement('script');
+        script.src = `https://www.sandbox.paypal.com/sdk/js?client-id=${encodeURIComponent(clientId)}&currency=USD`;
+        script.defer = true;
+        script.onerror = () => {
+          console.error('Failed to load PayPal SDK, check clientId or network:', clientId);
+        };
+        script.onload = () => {
+          console.log('PayPal SDK loaded dynamically');
+          initializeCartPayPalButton();
+        };
+        document.head.appendChild(script);
+      } else {
+        initializeCartPayPalButton();
+      }
+
+      function initializeCartPayPalButton() {
+        if (!paypalButtonInitialized && window.paypal && document.getElementById('cartPaypalButton')) {
+          paypalButtonInitialized = true; // Set flag after first initialization
           paypal.Buttons({
             createOrder: function(data, actions) {
+              const cartTotal = document.getElementById('cartTotal').textContent;
+              if (!cartTotal || parseFloat(cartTotal) <= 0) {
+                console.error('Invalid cart total:', cartTotal);
+                return Promise.reject(new Error('Cart is empty or total is invalid'));
+              }
               return actions.order.create({
                 purchase_units: [{
                   amount: {
-                    value: product.price.toString(),
+                    value: cartTotal,
                     currency_code: 'USD'
                   }
                 }]
@@ -84,14 +106,48 @@
             onApprove: function(data, actions) {
               return actions.order.capture().then(function(details) {
                 alert('Transaction completed by ' + details.payer.name.given_name);
+                window.location.reload();
               });
             },
             onError: function(err) {
               console.error('PayPal Button Error:', err);
             }
-          }).render(`#paypal-button-container-${product.title.replace(/[^a-zA-Z0-9]/g, '-')}`);
-        });
-      });
-    </script>
-  </body>
-  </html>
+          }).render('#cartPaypalButton');
+           console.log('PayPal button initialized');
+        } else if (paypalButtonInitialized) {
+        console.log('PayPal button already initialized, updating total');
+        // Optionally update the button's order amount, but PayPal doesn't support dynamic updates after render
+        // For now, rely on cartTotal being up-to-date
+        } else {
+          console.error('PayPal not available or cartPaypalButton not found');
+        }
+      }
+
+      window.addEventListener('cartUpdated', () => {
+      // Only update the total display, button is already rendered
+      updateCartDisplay();
+      console.log('Cart updated, total refreshed');
+    });
+
+    function updateCartDisplay() {
+      const cartTotal = document.getElementById('cartTotal');
+     if (cartTotal && window.cart) {
+        console.log('Updating cart display with cart:', window.cart);
+        const total = Object.keys(window.cart).reduce((sum, id) => {
+          const product = window.products.find(p => p.id === id);
+          console.log(`Product ${id}: quantity ${window.cart[id]}, price ${product ? product.price : 'N/A'}`);
+          return sum + (product ? product.price * window.cart[id] : 0);
+        }, 0);
+        console.log('Calculated total:', total);
+        cartTotal.textContent = total.toFixed(2);
+      } else {
+        console.error('cartTotal or window.cart not found:', { cartTotal, windowCart: window.cart });
+      }
+    }
+  });
+</script>
+</body>
+</html>
+
+
+
