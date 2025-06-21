@@ -1,8 +1,5 @@
 {
   "version": 2,
-  "engines": {
-    "node": "20.19.2"
-  },
   "builds": [
     {
       "src": "server.js",
