@@ -17,8 +17,11 @@ app.use('/data', express.static(path.join('public', 'data')));
 
 app.get('/', (req, res) => {
   try {
+    console.log('Attempting to read products.json');
     const productsData = readFileSync(path.join('public', 'data', 'products.json'), 'utf8');
+    console.log('Raw products data:', productsData);
     const rawProducts = JSON.parse(productsData);
+    console.log('Parsed raw products:', rawProducts);
     const products = rawProducts.map(product => {
       const price = parseFloat(product.price);
       if (isNaN(price)) {
@@ -35,7 +38,7 @@ app.get('/', (req, res) => {
     if (products.length === 0) {
       throw new Error('No valid products found after parsing');
     }
-    console.log('Rendered products:', products); // Debug log
+    console.log('Rendered products:', products);
     res.render('index', { products, clientId: process.env.PAYPAL_CLIENT_ID });
   } catch (error) {
     console.error('Error processing products.json:', error);
