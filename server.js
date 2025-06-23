@@ -17,27 +17,21 @@ app.use('/data', express.static(path.join('public', 'data')));
 
 app.get('/', (req, res) => {
   try {
-    const productsPath = path.join('public', 'data', 'products.json');
+    const productsPath = path.resolve('public', 'data', 'products.json');
+    console.log(`Attempting to access products.json at: ${productsPath}`);
     if (!existsSync(productsPath)) {
       throw new Error('products.json file not found');
-    }
-    if (process.env.NODE_ENV !== 'production') {
-      console.log('Attempting to read products.json from:', productsPath);
     }
     const productsData = readFileSync(productsPath, 'utf8');
     if (!productsData) {
       throw new Error('products.json is empty');
     }
-    if (process.env.NODE_ENV !== 'production') {
-      console.log('Raw products data:', productsData.slice(0, 100));
-    }
+    console.log('products.json read successfully, first 100 chars:', productsData.slice(0, 100));
     const rawProducts = JSON.parse(productsData);
     if (!Array.isArray(rawProducts) || rawProducts.length === 0) {
       throw new Error('products.json contains no valid products');
     }
-    if (process.env.NODE_ENV !== 'production') {
-      console.log('Parsed raw products:', rawProducts);
-    }
+    console.log('Parsed products count:', rawProducts.length);
     const products = rawProducts.map(product => {
       const price = parseFloat(product.price);
       if (isNaN(price)) {
@@ -54,31 +48,27 @@ app.get('/', (req, res) => {
     if (products.length === 0) {
       throw new Error('No valid products found after parsing');
     }
-    if (process.env.NODE_ENV !== 'production') {
-      console.log('Rendered products:', products);
-    }
+    console.log('Valid products count:', products.length);
     res.set('Content-Type', 'text/html');
     res.render('index', { products, clientId: process.env.PAYPAL_CLIENT_ID }, (err, html) => {
       if (err) {
-        console.error('Error rendering EJS:', err);
+        console.error('Error rendering index.ejs:', err);
         res.status(500).set('Content-Type', 'text/html').render('error', { message: 'Rendering error. Please try again.' });
         return;
       }
-      if (process.env.NODE_ENV !== 'production') {
-        console.log('Rendered HTML starts with:', html.slice(0, 50));
-      }
+      console.log('Rendered HTML starts with:', html.slice(0, 50));
       res.send(html);
     });
   } catch (error) {
-    console.error('Error processing request:', error.message);
+    console.error('Error processing request:', error.message, error.stack);
     res.status(500).set('Content-Type', 'text/html').render('error', { message: `Unable to load products: ${error.message}` });
   }
 });
 
-// Export the app for Vercel
+// Export for Vercel
 export default app;
 
-// Start the server for local development
+// Start server for local development
 if (process.env.NODE_ENV !== 'production') {
   app.listen(port, () => {
     console.log(`Server running on port ${port}`);
