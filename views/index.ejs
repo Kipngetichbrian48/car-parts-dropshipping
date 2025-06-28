@@ -74,14 +74,14 @@
     <script>
         // PayPal SDK
         const paypalScript = document.createElement('script');
-        paypalScript.src = `https://www.sandbox.paypal.com/sdk/js?client-id=<%= clientId %>&currency=USD`; // Switched to sandbox
+        paypalScript.src = `https://www.sandbox.paypal.com/sdk/js?client-id=<%= clientId %>¤cy=USD`; // Fixed: Changed ¤ to &
         paypalScript.async = true;
         paypalScript.onload = () => {
             console.log('PayPal SDK loaded successfully');
             if (typeof initializePayPalButton === 'function') {
                 initializePayPalButton();
             } else {
-                console.error('initializePayPalButton is not defined after SDK load');
+                console.error('initializePaypalButton is not defined after SDK load');
             }
         };
         paypalScript.onerror = (e) => console.error('PayPal SDK failed to load:', e);
@@ -116,59 +116,59 @@
             }
         }
 
-    // Cart and PayPal initialization
-document.addEventListener('DOMContentLoaded', () => {
-    // Cart functionality
-    window.cart = {};
-    document.querySelectorAll('#productGrid button').forEach(button => {
-        button.addEventListener('click', () => {
-            const id = button.getAttribute('data-product-id');
-            console.log('Adding to cart with id from button:', id);
-            window.cart[id] = (window.cart[id] || 0) + 1;
-            updateCart();
-        });
-    });
+        // Cart and PayPal initialization
+        document.addEventListener('DOMContentLoaded', () => {
+            // Cart functionality
+            window.cart = {};
+            document.querySelectorAll('#productGrid button').forEach(button => {
+                button.addEventListener('click', () => {
+                    const id = button.getAttribute('data-product-id');
+                    console.log('Adding to cart with id from button:', id);
+                    window.cart[id] = (window.cart[id] || 0) + 1;
+                    updateCart();
+                });
+            });
 
-    function updateCart() {
-        const cartItems = document.getElementById('cartItems');
-        cartItems.innerHTML = '';
-        let total = 0;
-        const productsDataRaw = document.getElementById('products-data').textContent;
-        console.log('Raw products data:', productsDataRaw); // Log raw JSON
-        let productsData;
-        try {
-            productsData = JSON.parse(productsDataRaw);
-            console.log('Parsed products data:', JSON.stringify(productsData, null, 2)); // Log parsed data
-        } catch (e) {
-            console.error('Failed to parse products data:', e);
-            return;
-        }
-        if (!productsData || productsData.length === 0) {
-            console.warn('No products data available');
-            return;
-        }
-        for (let id in window.cart) {
-            const product = productsData.find(p => p.id === id);
-            console.log('Searching for id:', id, 'in productsData IDs:', productsData.map(p => p.id));
-            console.log('Found product:', product);
-            if (product && product.title) {
-                const li = document.createElement('li');
-                li.textContent = `${product.title} x${window.cart[id]} - $${(parseFloat(product.price) * window.cart[id]).toFixed(2)}`;
-                cartItems.appendChild(li);
-                total += parseFloat(product.price) * window.cart[id];
-            } else if (product) {
-                console.warn(`Product with id ${id} found but missing title. Using name: ${product.name}`);
-                const li = document.createElement('li');
-                li.textContent = `${product.name || 'Unnamed Item'} x${window.cart[id]} - $${(parseFloat(product.price) * window.cart[id]).toFixed(2)}`;
-                cartItems.appendChild(li);
-                total += parseFloat(product.price) * window.cart[id];
-            } else {
-                console.warn(`Product with id ${id} not found. Available IDs:`, productsData.map(p => p.id));
+            function updateCart() {
+                const cartItems = document.getElementById('cartItems');
+                cartItems.innerHTML = '';
+                let total = 0;
+                const productsDataRaw = document.getElementById('products-data').textContent;
+                console.log('Raw products data:', productsDataRaw); // Log raw JSON
+                let productsData;
+                try {
+                    productsData = JSON.parse(productsDataRaw);
+                    console.log('Parsed products data:', JSON.stringify(productsData, null, 2)); // Log parsed data
+                } catch (e) {
+                    console.error('Failed to parse products data:', e);
+                    return;
+                }
+                if (!productsData || productsData.length === 0) {
+                    console.warn('No products data available');
+                    return;
+                }
+                for (let id in window.cart) {
+                    const product = productsData.find(p => p.id === id);
+                    console.log('Searching for id:', id, 'in productsData IDs:', productsData.map(p => p.id));
+                    console.log('Found product:', product);
+                    if (product && product.title) {
+                        const li = document.createElement('li');
+                        li.textContent = `${product.title} x${window.cart[id]} - $${(parseFloat(product.price) * window.cart[id]).toFixed(2)}`;
+                        cartItems.appendChild(li);
+                        total += parseFloat(product.price) * window.cart[id];
+                    } else if (product) {
+                        console.warn(`Product with id ${id} found but missing title. Using name: ${product.name}`);
+                        const li = document.createElement('li');
+                        li.textContent = `${product.name || 'Unnamed Item'} x${window.cart[id]} - $${(parseFloat(product.price) * window.cart[id]).toFixed(2)}`;
+                        cartItems.appendChild(li);
+                        total += parseFloat(product.price) * window.cart[id];
+                    } else {
+                        console.warn(`Product with id ${id} not found. Available IDs:`, productsData.map(p => p.id));
+                    }
+                }
+                document.getElementById('cartTotal').textContent = total.toFixed(2);
             }
-        }
-        document.getElementById('cartTotal').textContent = total.toFixed(2);
-    }
-})   
-</script>
+        })   
+    </script>
 </body>
 </html>
