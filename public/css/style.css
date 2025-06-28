@@ -26,19 +26,22 @@ main {
     padding: 20px;
     max-width: 1200px;
     margin: 0 auto;
+    overflow-x: hidden; /* Prevent unwanted overflow */
 }
 #productGrid div {
-    border: 2px solid #ff4500; /* Orange trim like a race car */
+    /* Removed border, using shadow instead */
     padding: 15px;
-    margin: 10px;
+    margin: 15px; /* Maintain external spacing between cards */
     display: inline-block;
-    background-color: #333;
+    background-color: #333; /* Enhanced contrast instead of border */
     border-radius: 8px;
     transition: transform 0.3s;
+    height: auto; /* Reset to auto to fit content */
+    box-shadow: 0 2px 4px rgba(255, 69, 0, 0.3); /* Subtle orange shadow */
 }
 #productGrid div:hover {
     transform: scale(1.05); /* Zoom effect on hover */
-    box-shadow: 0 0 10px #ff4500;
+    box-shadow: 0 4px 8px rgba(255, 69, 0, 0.5); /* Stronger shadow on hover */
 }
 #productGrid h3 {
     color: #ffcc00; /* Gold for a premium feel */
@@ -64,6 +67,7 @@ main {
     background-color: #222;
     padding: 15px;
     border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3); /* Subtle shadow */
 }
 #cart h2, #checkout h2 {
     color: #ffcc00;
@@ -92,7 +96,7 @@ main {
     #productGrid div {
         display: block;
         width: 90%;
-        margin: 10px auto;
+        margin: 15px auto; /* Maintain margin for mobile */
     }
 }
 #paypal-button-container {
@@ -107,11 +111,10 @@ main {
 }
 #productGrid {
     display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
+    flex-wrap: wrap; /* Reverted to vertical layout */
+    gap: 20px; /* Maintain gap between product cards */
 }
 #productGrid .product {
-    border: 1px solid #ccc;
     padding: 10px;
     text-align: center;
 }
@@ -120,20 +123,90 @@ main {
     display: block !important;
 }
 footer {
-  text-align: center;
-  padding: 20px;
-  background-color: #f8f8f8;
-  margin-top: 20px;
-  font-size: 1em;
-  color: #333;
+    text-align: center;
+    padding: 20px;
+    background-color: #f8f8f8;
+    margin-top: 20px;
+    font-size: 1em;
+    color: #333;
 }
 footer p {
-  margin: 5px 0;
+    margin: 5px 0;
 }
 footer a {
-  color: #007bff;
-  text-decoration: none;
+    color: #007bff;
+    text-decoration: none;
 }
 footer a:hover {
-  text-decoration: underline;
+    text-decoration: underline;
+}
+
+/* Adjusted Vertical Layout with Reduced Internal Image Spacing */
+.product-carousel {
+  position: relative;
+  width: 100%;
+  max-width: 300px; /* Adjust based on your design */
+  margin: 0 auto;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.carousel-main {
+  width: 100%;
+  min-height: 150px; /* Reduced from 200px to bring images closer */
+  overflow: hidden;
+}
+
+.main-image {
+  width: 100%;
+  height: 100%;
+  object-fit: contain; /* Ensures the image fits without stretching */
+}
+
+.carousel-thumbnails {
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  overflow-x: auto; /* Horizontal scroll if needed */
+  padding: 0; /* Removed padding to reduce vertical gap */
+  min-height: 60px; /* Reduced from 80px to bring images closer */
+}
+
+.thumbnail {
+  flex: 0 0 80px; /* Fixed width for each thumbnail */
+  height: 60px; /* Reduced from 80px to match new min-height */
+  margin-right: 2px; /* Reduced from 5px to tighten horizontal spacing */
+  overflow: hidden;
+}
+
+.thumbnail img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover; /* Crops to fit thumbnail size */
+  /* Removed border for cleaner look */
+}
+
+/* Hide scrollbar for better aesthetics */
+.carousel-thumbnails::-webkit-scrollbar {
+  display: none; /* Hide scrollbar for WebKit browsers */
+}
+.carousel-thumbnails {
+  -ms-overflow-style: none; /* Hide scrollbar for IE and Edge */
+  scrollbar-width: none; /* Hide scrollbar for Firefox */
+}
+
+/* Ensure product-card styling complements carousel */
+.product-card {
+  /* Removed border, using shadow and background */
+  padding: 15px;
+  margin: 15px; /* Maintain external spacing */
+  display: inline-block;
+  background-color: #333;
+  border-radius: 8px;
+  transition: transform 0.3s;
+  text-align: center;
+  vertical-align: top;
+  width: 300px; /* Fixed width to avoid overlap */
+  min-height: 350px; /* Adjusted to fit reduced image heights */
 }

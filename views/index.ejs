@@ -1,157 +1,174 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Buy Affordable Car Parts Online | Car Parts Dropshipping</title>
-  <meta name="description" content="Shop high-quality car parts for all vehicles at unbeatable prices. Fast shipping via AliExpress dropshipping.">
-  <meta name="google-site-verification" content="5okRhahS96K2gshetDlQsDwe6IXUgjfS-ps8nslFa2U" />
-  <link rel="stylesheet" href="/css/style.css">
-  <!-- Removed defer PayPal script to handle dynamically -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Buy Affordable Car Parts Online | Garage Parts Store</title>
+    <meta name="description" content="Shop high-quality car parts for all vehicles at unbeatable prices. Fast shipping via trusted partners.">
+    <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
-  <header>
-    <h1>Unbeatable Car Parts Deals – Shop Now & Save Big!</h1>
-  </header>
-  <main>
-    <section id="productGrid" class="product-grid">
-      <% products.forEach(product => { %>
-        <div class="product-card">
-          <img src="<%= product.image %>" alt="<%= product.title %>">
-          <h3><%= product.title %></h3>
-          <p>$<%= product.price.toFixed(2) %></p>
-          <button data-product-id="<%= product.id %>">Add to Cart</button>
-        </div>
-      <% }); %>
-    </section>
-    <aside id="cart">
-      <h2>Your Cart</h2>
-      <ul id="cartItems"></ul>
-      <p>Total: $<span id="cartTotal">0.00</span></p>
-      <div id="cartPaypalButton"></div>
-    </aside>
-    <section id="checkout" style="display:block;">
-      <h2>Finalize Your Upgrade</h2>
-      <form id="checkoutForm">
-        <input type="text" id="name" placeholder="Name" required><br>
-        <input type="tel" id="phone" placeholder="Phone" required><br>
-        <input type="text" id="address" placeholder="Address" required><br>
-        <input type="text" id="city" placeholder="City" required><br>
-        <input type="text" id="province" placeholder="Province" required><br>
-        <input type="text" id="countryCode" placeholder="Country Code" required><br>
-        <input type="text" id="zip" placeholder="Zip" required><br>
-        <button type="button" id="ignitePurchase">Ignite Your Purchase!</button>
-      </form>
-    </section>
-  </main>
+    <header>
+        <h1>Unbeatable Car Parts Deals – Shop Now & Save Big!</h1>
+    </header>
+    <main>
+        <section id="productGrid" class="product-grid">
+            <% if (products && products.length > 0) { %>
+                <% products.forEach(product => { %>
+                    <div class="product-card">
+                        <div class="product-carousel" data-product-id="<%= product.id %>">
+                            <div class="carousel-main">
+                                <% if (product.image) { %>
+                                    <img src="<%= product.image %>" alt="<%= product.name || 'Product' %> - Main Image" class="main-image" onerror="this.src='https://via.placeholder.com/150';">
+                                <% } else { %>
+                                    <img src="https://via.placeholder.com/150" alt="No Image" class="main-image">
+                                <% } %>
+                            </div>
+                            <div class="carousel-thumbnails">
+                                <% (product.additionalImages || []).forEach((img, index) => { %>
+                                    <div class="carousel-slide thumbnail">
+                                        <img src="<%= img %>" alt="<%= product.name || 'Product' %> - Thumbnail <%= index + 1 %>" onerror="this.src='https://via.placeholder.com/60';">
+                                    </div>
+                                <% }); %>
+                                <% if (!(product.additionalImages && product.additionalImages.length)) { %>
+                                    <div class="carousel-slide thumbnail">
+                                        <img src="https://via.placeholder.com/60" alt="No Thumbnail">
+                                    </div>
+                                <% } %>
+                            </div>
+                        </div>
+                        <h3><%= product.name || 'Unnamed Product' %></h3>
+                        <p>$<%= (product.price || 0).toFixed(2) %></p>
+                        <button data-product-id="<%= product.id %>">Add to Cart</button>
+                    </div>
+                <% }); %>
+            <% } else { %>
+                <p>No products available.</p>
+            <% } %>
+        </section>
+        <aside id="cart">
+            <h2>Your Cart</h2>
+            <ul id="cartItems"></ul>
+            <p>Total: $<span id="cartTotal">0.00</span></p>
+            <div id="cartPaypalButton"></div>
+        </aside>
+        <section id="checkout" style="display:none;">
+            <h2>Finalize Your Upgrade</h2>
+            <form id="checkoutForm">
+                <input type="text" id="name" placeholder="Name" required><br>
+                <input type="tel" id="phone" placeholder="Phone" required><br>
+                <input type="text" id="address" placeholder="Address" required><br>
+                <button type="button" id="ignitePurchase">Ignite Your Purchase!</button>
+            </form>
+        </section>
+    </main>
+    <footer>
+        <p>Shipping: 2–6 weeks via trusted partners.</p>
+        <p>Have questions? Contact us on <a href="https://x.com/@Brian_car_parts">X</a>.</p>
+        <p>30-day returns for defective items. Contact us via PayPal.</p>
+    </footer>
 
-  <script type="application/json" id="products-data">
-    <%- JSON.stringify(products) %>
-  </script>
-  <script>
-    try {
-      const productsData = document.getElementById('products-data').textContent;
-      window.products = JSON.parse(productsData);
-      console.log('Products loaded:', window.products);
-    } catch (error) {
-      console.error('Error parsing products data:', error);
-    }
-  </script>
-
-  <script type="module" src="/js/products.js"></script>
-  <script type="module" src="/js/script.js"></script>
-
-  <script>
-    document.addEventListener('DOMContentLoaded', () => {
-      const clientId = '<%= clientId %>';
-      console.log('Client ID for PayPal:', clientId);
-
-      console.log('PayPal SDK check:', typeof paypal);
-      let paypalButtonInitialized = false; // Flag to track button initialization
-
-      if (typeof paypal === 'undefined') {
-        console.log('Attempting to load PayPal SDK with clientId:', clientId);
-        const script = document.createElement('script');
-        script.src = `https://www.sandbox.paypal.com/sdk/js?client-id=${encodeURIComponent(clientId)}&currency=USD`;
-        script.defer = true;
-        script.onerror = () => {
-          console.error('Failed to load PayPal SDK, check clientId or network:', clientId);
-        };
-        script.onload = () => {
-          console.log('PayPal SDK loaded dynamically');
-          initializeCartPayPalButton();
-        };
-        document.head.appendChild(script);
-      } else {
-        initializeCartPayPalButton();
-      }
-
-      function initializeCartPayPalButton() {
-        if (!paypalButtonInitialized && window.paypal && document.getElementById('cartPaypalButton')) {
-          paypalButtonInitialized = true; // Set flag after first initialization
-          paypal.Buttons({
-            createOrder: function(data, actions) {
-              const cartTotal = document.getElementById('cartTotal').textContent;
-              if (!cartTotal || parseFloat(cartTotal) <= 0) {
-                console.error('Invalid cart total:', cartTotal);
-                return Promise.reject(new Error('Cart is empty or total is invalid'));
-              }
-              return actions.order.create({
-                purchase_units: [{
-                  amount: {
-                    value: cartTotal,
-                    currency_code: 'USD'
-                  }
-                }]
-              });
-            },
-            onApprove: function(data, actions) {
-              return actions.order.capture().then(function(details) {
-                alert('Transaction completed by ' + details.payer.name.given_name);
-                window.location.reload();
-              });
-            },
-            onError: function(err) {
-              console.error('PayPal Button Error:', err);
+    <script type="application/json" id="products-data">
+        <%- JSON.stringify(products) %>
+    </script>
+    <script>
+        // PayPal SDK
+        const paypalScript = document.createElement('script');
+        paypalScript.src = `https://www.sandbox.paypal.com/sdk/js?client-id=<%= clientId %>&currency=USD`; // Switched to sandbox
+        paypalScript.async = true;
+        paypalScript.onload = () => {
+            console.log('PayPal SDK loaded successfully');
+            if (typeof initializePayPalButton === 'function') {
+                initializePayPalButton();
+            } else {
+                console.error('initializePayPalButton is not defined after SDK load');
             }
-          }).render('#cartPaypalButton');
-           console.log('PayPal button initialized');
-        } else if (paypalButtonInitialized) {
-        console.log('PayPal button already initialized, updating total');
-        // Optionally update the button's order amount, but PayPal doesn't support dynamic updates after render
-        // For now, rely on cartTotal being up-to-date
-        } else {
-          console.error('PayPal not available or cartPaypalButton not found');
-        }
-      }
+        };
+        paypalScript.onerror = (e) => console.error('PayPal SDK failed to load:', e);
+        document.head.appendChild(paypalScript);
 
-      window.addEventListener('cartUpdated', () => {
-      // Only update the total display, button is already rendered
-      updateCartDisplay();
-      console.log('Cart updated, total refreshed');
+        // Global PayPal button initialization function
+        function initializePayPalButton() {
+            if (window.paypal) {
+                paypal.Buttons({
+                    createOrder: (data, actions) => {
+                        const cartTotal = document.getElementById('cartTotal').textContent || '0.00';
+                        return actions.order.create({
+                            purchase_units: [{
+                                amount: {
+                                    value: cartTotal,
+                                    currency_code: 'USD'
+                                }
+                            }]
+                        });
+                    },
+                    onApprove: (data, actions) => {
+                        return actions.order.capture().then((details) => {
+                            alert('Transaction completed by ' + (details.payer.name?.given_name || 'User'));
+                        });
+                    },
+                    onError: (err) => {
+                        console.error('PayPal Button Error:', err);
+                    }
+                }).render('#cartPaypalButton');
+            } else {
+                console.error('PayPal SDK not available after load. Rendered clientId:', '<%= clientId %>');
+            }
+        }
+
+    // Cart and PayPal initialization
+document.addEventListener('DOMContentLoaded', () => {
+    // Cart functionality
+    window.cart = {};
+    document.querySelectorAll('#productGrid button').forEach(button => {
+        button.addEventListener('click', () => {
+            const id = button.getAttribute('data-product-id');
+            console.log('Adding to cart with id from button:', id);
+            window.cart[id] = (window.cart[id] || 0) + 1;
+            updateCart();
+        });
     });
 
-    function updateCartDisplay() {
-      const cartTotal = document.getElementById('cartTotal');
-     if (cartTotal && window.cart) {
-        console.log('Updating cart display with cart:', window.cart);
-        const total = Object.keys(window.cart).reduce((sum, id) => {
-          const product = window.products.find(p => p.id === id);
-          console.log(`Product ${id}: quantity ${window.cart[id]}, price ${product ? product.price : 'N/A'}`);
-          return sum + (product ? product.price * window.cart[id] : 0);
-        }, 0);
-        console.log('Calculated total:', total);
-        cartTotal.textContent = total.toFixed(2);
-      } else {
-        console.error('cartTotal or window.cart not found:', { cartTotal, windowCart: window.cart });
-      }
+    function updateCart() {
+        const cartItems = document.getElementById('cartItems');
+        cartItems.innerHTML = '';
+        let total = 0;
+        const productsDataRaw = document.getElementById('products-data').textContent;
+        console.log('Raw products data:', productsDataRaw); // Log raw JSON
+        let productsData;
+        try {
+            productsData = JSON.parse(productsDataRaw);
+            console.log('Parsed products data:', JSON.stringify(productsData, null, 2)); // Log parsed data
+        } catch (e) {
+            console.error('Failed to parse products data:', e);
+            return;
+        }
+        if (!productsData || productsData.length === 0) {
+            console.warn('No products data available');
+            return;
+        }
+        for (let id in window.cart) {
+            const product = productsData.find(p => p.id === id);
+            console.log('Searching for id:', id, 'in productsData IDs:', productsData.map(p => p.id));
+            console.log('Found product:', product);
+            if (product && product.title) {
+                const li = document.createElement('li');
+                li.textContent = `${product.title} x${window.cart[id]} - $${(parseFloat(product.price) * window.cart[id]).toFixed(2)}`;
+                cartItems.appendChild(li);
+                total += parseFloat(product.price) * window.cart[id];
+            } else if (product) {
+                console.warn(`Product with id ${id} found but missing title. Using name: ${product.name}`);
+                const li = document.createElement('li');
+                li.textContent = `${product.name || 'Unnamed Item'} x${window.cart[id]} - $${(parseFloat(product.price) * window.cart[id]).toFixed(2)}`;
+                cartItems.appendChild(li);
+                total += parseFloat(product.price) * window.cart[id];
+            } else {
+                console.warn(`Product with id ${id} not found. Available IDs:`, productsData.map(p => p.id));
+            }
+        }
+        document.getElementById('cartTotal').textContent = total.toFixed(2);
     }
-  });
+})   
 </script>
-<footer>
-  <p>Shipping: 2–6 weeks via trusted partners.</p>
-  <p>Have questions? Contact us on <a href="https://x.com/@Brian_car_parts">X</a>.</p>
-  <p>30-day returns for defective items. Contact us via PayPal.</p>
-</footer>
 </body>
 </html>
