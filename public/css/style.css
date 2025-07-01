@@ -210,3 +210,68 @@ footer a:hover {
   width: 300px; /* Fixed width to avoid overlap */
   min-height: 350px; /* Adjusted to fit reduced image heights */
 }
+/* Search Filter Styles */
+#searchFilter {
+    background-color: #222;
+    padding: 15px;
+    margin: 20px auto;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    max-width: 1200px;
+    text-align: center;
+}
+
+#searchFilter h2 {
+    color: #ffcc00;
+    margin-top: 0;
+    font-size: 1.8em;
+}
+
+#searchForm {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    align-items: center;
+}
+
+#searchForm input[type="text"] {
+    padding: 8px 12px;
+    border-radius: 4px;
+    border: none;
+    font-size: 1em;
+    color: white;
+    background-color: #444;
+    width: 200px;
+}
+
+#searchForm button {
+    padding: 8px 12px;
+    border-radius: 4px;
+    border: none;
+    font-size: 1em;
+    color: white;
+    background-color: #ff4500;
+    cursor: pointer;
+}
+
+#searchForm button:hover {
+    background-color: #e03a00;
+}
+
+#searchForm button#resetSearch {
+    background-color: #666;
+}
+
+#searchForm button#resetSearch:hover {
+    background-color: #555;
+}
+
+@media (max-width: 600px) {
+    #searchForm {
+        flex-direction: column;
+    }
+    #searchForm input[type="text"], #searchForm button {
+        width: 100%;
+        max-width: 300px;
+    }
+}
