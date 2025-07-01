@@ -63,24 +63,16 @@ main {
 #productGrid button:hover {
     background-color: #e03a00;
 }
-#cart, #checkout {
+#checkout {
     margin-top: 20px;
     background-color: #222;
     padding: 15px;
     border-radius: 8px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3); /* Subtle shadow */
 }
-#cart h2, #checkout h2 {
+#checkout h2 {
     color: #ffcc00;
     margin-top: 0;
-}
-#cart ul {
-    list-style: none;
-    padding: 0;
-}
-#cartTotal {
-    font-weight: bold;
-    color: #ff4500;
 }
 #checkoutButton, #checkoutForm button {
     background-color: #ff4500;
@@ -118,10 +110,6 @@ main {
 #productGrid .product {
     padding: 10px;
     text-align: center;
-}
-#paypal-button-container {
-    margin: 10px 0;
-    display: block !important;
 }
 /* Adjusted Vertical Layout with Reduced Internal Image Spacing */
 .product-carousel {
@@ -287,5 +275,113 @@ footer a:hover {
 @media (max-width: 600px) {
     footer {
         padding: 15px;
+    }
+}
+
+/* Floating Cart Icon Styles */
+#cartIcon {
+    position: fixed;
+    bottom: 20px;
+    right: 20px; /* Reset to bottom-right corner */
+    background-color: #ff4500; /* Orange to match buttons */
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    font-size: 1.5em;
+    cursor: pointer;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    z-index: 10001; /* Increased to stay above panel */
+    display: flex; /* Center the icon */
+    align-items: center;
+    justify-content: center;
+    /* Removed margin-right to fix positioning */
+}
+
+#cartIcon:hover {
+    background-color: #e03a00;
+}
+
+/* Cart Panel Styles */
+.cart-panel {
+    position: fixed;
+    top: 0;
+    right: -300px; /* Start off-screen */
+    width: 300px;
+    height: 100%;
+    background-color: #222;
+    color: #fff;
+    padding: 20px;
+    box-shadow: -2px 0 4px rgba(0, 0, 0, 0.3);
+    z-index: 10000; /* Below icon */
+    transition: right 0.3s ease; /* Smooth slide effect */
+    overflow-y: auto; /* Scroll if content overflows */
+}
+
+.cart-panel.active {
+    right: 0; /* Slide in when active */
+}
+
+#cartPanel h2 {
+    color: #ffcc00;
+    margin-top: 0;
+}
+
+#cartPanel ul {
+    list-style: none;
+    padding: 0;
+}
+
+#cartPanel #cartTotal {
+    font-weight: bold;
+    color: #ff4500;
+}
+
+#cartPanel #cartPaypalButton {
+    margin: 10px 0;
+    display: block !important; /* Ensure PayPal button container is visible */
+}
+
+#closeCart {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background-color: #ff4500;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 30px;
+    height: 30px;
+    font-size: 1.2em;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#closeCart:hover {
+    background-color: #e03a00;
+}
+
+@media (max-width: 600px) {
+    .cart-panel {
+        width: 100%;
+        right: -100%;
+    }
+    .cart-panel.active {
+        right: 0;
+    }
+    #cartIcon {
+        bottom: 10px;
+        right: 10px;
+        width: 40px;
+        height: 40px;
+        font-size: 1.2em;
+    }
+    #closeCart {
+        width: 25px;
+        height: 25px;
+        font-size: 1em;
     }
 }

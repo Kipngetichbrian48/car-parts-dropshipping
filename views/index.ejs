@@ -55,12 +55,6 @@
                 <p>No products available.</p>
             <% } %>
         </section>
-        <aside id="cart">
-            <h2>Your Cart</h2>
-            <ul id="cartItems"></ul>
-            <p>Total: $<span id="cartTotal">0.00</span></p>
-            <div id="cartPaypalButton"></div>
-        </aside>
         <section id="checkout" style="display:none;">
             <h2>Finalize Your Upgrade</h2>
             <form id="checkoutForm">
@@ -77,6 +71,18 @@
         <p>30-day returns for defective items. Contact us via PayPal.</p>
     </footer>
 
+    <!-- Floating Cart Icon -->
+    <button id="cartIcon" title="View Cart">🛒</button>
+
+    <!-- Cart Panel (Hidden by default) -->
+    <div id="cartPanel" class="cart-panel">
+        <button id="closeCart" title="Close Cart">X</button>
+        <h2>Your Cart</h2>
+        <ul id="cartItems"></ul>
+        <p>Total: $<span id="cartTotal">0.00</span></p>
+        <div id="cartPaypalButton"></div>
+    </div>
+
     <script type="application/json" id="products-data">
         <%- JSON.stringify(products) %>
     </script>
@@ -87,43 +93,9 @@
         paypalScript.async = true;
         paypalScript.onload = () => {
             console.log('PayPal SDK loaded successfully');
-            if (typeof initializePayPalButton === 'function') {
-                initializePayPalButton();
-            } else {
-                console.error('initializePaypalButton is not defined after SDK load');
-            }
         };
         paypalScript.onerror = (e) => console.error('PayPal SDK failed to load:', e);
         document.head.appendChild(paypalScript);
-
-        // Global PayPal button initialization function
-        function initializePayPalButton() {
-            if (window.paypal) {
-                paypal.Buttons({
-                    createOrder: (data, actions) => {
-                        const cartTotal = document.getElementById('cartTotal').textContent || '0.00';
-                        return actions.order.create({
-                            purchase_units: [{
-                                amount: {
-                                    value: cartTotal,
-                                    currency_code: 'USD'
-                                }
-                            }]
-                        });
-                    },
-                    onApprove: (data, actions) => {
-                        return actions.order.capture().then((details) => {
-                            alert('Transaction completed by ' + (details.payer.name?.given_name || 'User'));
-                        });
-                    },
-                    onError: (err) => {
-                        console.error('PayPal Button Error:', err);
-                    }
-                }).render('#cartPaypalButton');
-            } else {
-                console.error('PayPal SDK not available after load. Rendered clientId:', '<%= clientId %>');
-            }
-        }
     </script>
     <script src="/js/script.js" type="module"></script>
 </body>

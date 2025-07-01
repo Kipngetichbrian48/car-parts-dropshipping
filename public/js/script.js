@@ -25,6 +25,9 @@ document.addEventListener('DOMContentLoaded', () => {
     // Store original products for reset
     const originalProducts = [...productsData];
 
+    // Flag to track PayPal button initialization
+    let isPayPalInitialized = false;
+
     // Initialize search
     const searchForm = document.getElementById('searchForm');
     const searchInput = document.getElementById('searchInput');
@@ -111,15 +114,75 @@ document.addEventListener('DOMContentLoaded', () => {
     // Update cart on custom event
     window.addEventListener('cartUpdated', () => {
         console.log('cartUpdated event received');
-        // Call updateCartTotal from products.js to update the total
         if (typeof updateCartTotal === 'function') {
             updateCartTotal();
             console.log('Cart total updated');
+            // Initialize PayPal button only if not already initialized
+            if (!isPayPalInitialized && typeof window.initializePayPalButton === 'function') {
+                window.initializePayPalButton();
+                isPayPalInitialized = true;
+            }
         } else {
             console.error('updateCartTotal function not available');
         }
     });
 
+    // Toggle cart panel on icon click
+    const cartIcon = document.getElementById('cartIcon');
+    const cartPanel = document.getElementById('cartPanel');
+    const closeCart = document.getElementById('closeCart');
+    if (cartIcon && cartPanel) {
+        cartIcon.addEventListener('click', () => {
+            cartPanel.classList.toggle('active');
+            console.log('Cart panel toggled');
+            // Initialize PayPal button only on first open if not already initialized
+            if (cartPanel.classList.contains('active') && !isPayPalInitialized && typeof window.initializePayPalButton === 'function') {
+                window.initializePayPalButton();
+                isPayPalInitialized = true;
+            }
+        });
+    } else {
+        console.error('Cart icon or panel not found');
+    }
+    if (closeCart) {
+        closeCart.addEventListener('click', () => {
+            cartPanel.classList.remove('active');
+            console.log('Cart panel closed');
+        });
+    } else {
+        console.error('Close cart button not found');
+    }
+
     // Initial grid render
     updateProductGrid(originalProducts);
+
+    // Define initializePayPalButton globally
+    window.initializePayPalButton = function() {
+        if (window.paypal && !document.querySelector('#cartPaypalButton .paypal-button')) {
+            paypal.Buttons({
+                createOrder: (data, actions) => {
+                    const cartTotal = document.getElementById('cartTotal').textContent || '0.00';
+                    return actions.order.create({
+                        purchase_units: [{
+                            amount: {
+                                value: cartTotal,
+                                currency_code: 'USD'
+                            }
+                        }]
+                    });
+                },
+                onApprove: (data, actions) => {
+                    return actions.order.capture().then((details) => {
+                        alert('Transaction completed by ' + (details.payer.name?.given_name || 'User'));
+                    });
+                },
+                onError: (err) => {
+                    console.error('PayPal Button Error:', err);
+                }
+            }).render('#cartPaypalButton');
+            console.log('PayPal button initialized');
+        } else {
+            console.log('PayPal button already initialized or SDK not available');
+        }
+    };
 });
