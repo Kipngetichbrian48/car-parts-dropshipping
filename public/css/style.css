@@ -14,13 +14,14 @@ header {
 }
 header h1 {
     margin: 0;
-    font-size: 2.5em;
+    font-size: 3.5em; /* Increased for prominence as the brand name */
     text-transform: uppercase;
     letter-spacing: 2px;
 }
 header p {
-    font-size: 1.2em;
-    margin: 5px 0;
+    font-size: 1.2em; /* Reduced from implied h1 size to fit as tagline */
+    margin: 5px 0 0; /* Added top margin to space from h1 */
+    font-weight: normal; /* Ensure it’s not bold like h1 */
 }
 main {
     padding: 20px;
@@ -122,25 +123,6 @@ main {
     margin: 10px 0;
     display: block !important;
 }
-footer {
-    text-align: center;
-    padding: 20px;
-    background-color: #f8f8f8;
-    margin-top: 20px;
-    font-size: 1em;
-    color: #333;
-}
-footer p {
-    margin: 5px 0;
-}
-footer a {
-    color: #007bff;
-    text-decoration: none;
-}
-footer a:hover {
-    text-decoration: underline;
-}
-
 /* Adjusted Vertical Layout with Reduced Internal Image Spacing */
 .product-carousel {
   position: relative;
@@ -273,5 +255,37 @@ footer a:hover {
     #searchForm input[type="text"], #searchForm button {
         width: 100%;
         max-width: 300px;
+    }
+}
+
+/* Footer Styles */
+footer {
+    background-color: #222;
+    color: #fff;
+    padding: 20px;
+    text-align: center;
+    margin-top: 20px;
+    border-top: 2px solid #ffcc00;
+    box-shadow: 0 -2px 4px rgba(0, 0, 0, 0.3);
+}
+
+footer p {
+    margin: 5px 0;
+    font-size: 1em;
+}
+
+footer a {
+    color: #ffcc00;
+    text-decoration: none;
+}
+
+footer a:hover {
+    text-decoration: underline;
+    color: #e6b800; /* Slightly darker gold on hover */
+}
+
+@media (max-width: 600px) {
+    footer {
+        padding: 15px;
     }
 }
