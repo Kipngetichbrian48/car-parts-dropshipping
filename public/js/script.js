@@ -132,6 +132,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const cartPanel = document.getElementById('cartPanel');
     const closeCart = document.getElementById('closeCart');
     if (cartIcon && cartPanel) {
+        // Ensure panel starts hidden
+        cartPanel.classList.remove('active');
         cartIcon.addEventListener('click', () => {
             cartPanel.classList.toggle('active');
             console.log('Cart panel toggled');
