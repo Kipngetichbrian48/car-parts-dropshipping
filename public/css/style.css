@@ -47,6 +47,7 @@ main {
 #productGrid h3 {
     color: #ffcc00; /* Gold for a premium feel */
     margin: 0 0 10px;
+    text-align: center; /* Ensure text is centered */
 }
 #productGrid img {
     max-width: 100%;
@@ -59,6 +60,8 @@ main {
     padding: 8px 16px;
     cursor: pointer;
     border-radius: 4px;
+    display: block; /* Ensure button is block-level and centered */
+    margin: 0 auto; /* Center the button */
 }
 #productGrid button:hover {
     background-color: #e03a00;
@@ -113,72 +116,86 @@ main {
 }
 /* Adjusted Vertical Layout with Reduced Internal Image Spacing */
 .product-carousel {
-  position: relative;
-  width: 100%;
-  max-width: 300px; /* Adjust based on your design */
-  margin: 0 auto;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
+    position: relative;
+    width: 100%; /* Match the card's content width */
+    margin: 0 auto; /* Center the carousel within the card */
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    justify-content: center; /* Center vertically */
+    align-items: center; /* Center horizontally */
+    padding: 0; /* Remove padding to reduce left offset */
+    box-sizing: border-box; /* Include any padding in width */
 }
 
 .carousel-main {
-  width: 100%;
-  min-height: 150px; /* Reduced from 200px to bring images closer */
-  overflow: hidden;
+    width: 100%;
+    min-height: 150px; /* Reduced from 200px to bring images closer */
+    overflow: hidden;
+    text-align: center; /* Center the main image */
+    padding: 0; /* Remove padding to avoid shifting */
 }
 
 .main-image {
-  width: 100%;
-  height: 100%;
-  object-fit: contain; /* Ensures the image fits without stretching */
+    width: 100%;
+    height: 100%;
+    object-fit: contain; /* Ensures the image fits without stretching */
+    display: block; /* Remove any inline quirks */
+    margin: 0 auto; /* Center the image */
+    max-width: 270px; /* Reduce max-width to fit within padding, adjust as needed */
 }
 
 .carousel-thumbnails {
-  width: 100%;
-  display: flex;
-  flex-direction: row;
-  overflow-x: auto; /* Horizontal scroll if needed */
-  padding: 0; /* Removed padding to reduce vertical gap */
-  min-height: 60px; /* Reduced from 80px to bring images closer */
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    overflow-x: auto; /* Horizontal scroll if needed */
+    padding: 0; /* Removed padding to reduce vertical gap */
+    min-height: 60px; /* Reduced from 80px to bring images closer */
+    justify-content: center; /* Center thumbnails horizontally */
+    margin-top: 5px; /* Small spacing above thumbnails */
 }
 
 .thumbnail {
-  flex: 0 0 80px; /* Fixed width for each thumbnail */
-  height: 60px; /* Reduced from 80px to match new min-height */
-  margin-right: 2px; /* Reduced from 5px to tighten horizontal spacing */
-  overflow: hidden;
+    flex: 0 0 80px; /* Fixed width for each thumbnail */
+    height: 60px; /* Reduced from 80px to match new min-height */
+    margin-right: 2px; /* Reduced from 5px to tighten horizontal spacing */
+    overflow: hidden;
+    text-align: center; /* Center thumbnail images */
 }
 
 .thumbnail img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover; /* Crops to fit thumbnail size */
-  /* Removed border for cleaner look */
+    width: 100%;
+    height: 100%;
+    object-fit: cover; /* Crops to fit thumbnail size */
+    /* Removed border for cleaner look */
+    display: block; /* Remove any inline quirks */
+    margin: 0 auto; /* Center the thumbnail image */
 }
 
 /* Hide scrollbar for better aesthetics */
 .carousel-thumbnails::-webkit-scrollbar {
-  display: none; /* Hide scrollbar for WebKit browsers */
+    display: none; /* Hide scrollbar for WebKit browsers */
 }
 .carousel-thumbnails {
-  -ms-overflow-style: none; /* Hide scrollbar for IE and Edge */
-  scrollbar-width: none; /* Hide scrollbar for Firefox */
+    -ms-overflow-style: none; /* Hide scrollbar for IE and Edge */
+    scrollbar-width: none; /* Hide scrollbar for Firefox */
 }
 
 /* Ensure product-card styling complements carousel */
 .product-card {
-  /* Removed border, using shadow and background */
-  padding: 15px;
-  margin: 15px; /* Maintain external spacing */
-  display: inline-block;
-  background-color: #333;
-  border-radius: 8px;
-  transition: transform 0.3s;
-  text-align: center;
-  vertical-align: top;
-  width: 300px; /* Fixed width to avoid overlap */
-  min-height: 350px; /* Adjusted to fit reduced image heights */
+    /* Removed border, using shadow and background */
+    padding: 10px; /* Reduced from 15px to decrease left margin effect */
+    margin: 15px; /* Maintain external spacing */
+    display: inline-block;
+    background-color: #333;
+    border-radius: 8px;
+    transition: transform 0.3s;
+    text-align: center; /* Center all content in the card */
+    vertical-align: top;
+    width: 300px; /* Fixed width to avoid overlap */
+    min-height: 350px; /* Adjusted to fit reduced image heights */
+    box-sizing: border-box; /* Include padding in width calculation */
 }
 /* Search Filter Styles */
 #searchFilter {
