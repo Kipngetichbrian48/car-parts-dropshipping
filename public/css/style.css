@@ -4,6 +4,7 @@ body {
     padding: 0;
     background-color: #1a1a1a; /* Dark background for a garage vibe */
     color: #e0e0e0; /* Light text for contrast */
+    overflow-x: hidden; /* Prevent horizontal overflow */
 }
 header {
     background-color: #2a2a72; /* Deep blue like a car paint */
@@ -31,7 +32,7 @@ main {
 }
 #productGrid div {
     /* Removed border, using shadow instead */
-    padding: 15px;
+    padding: 10px; /* Reduced from 15px to align with card content */
     margin: 15px; /* Maintain external spacing between cards */
     display: inline-block;
     background-color: #333; /* Enhanced contrast instead of border */
@@ -324,20 +325,22 @@ footer a:hover {
     position: fixed;
     top: 0;
     right: -320px; /* Adjusted to fully hide with padding (300px width + 20px padding) */
-    width: 300px;
+    width: 100%; /* Use full width to avoid clipping */
     height: 100%;
     background-color: #222;
     color: #fff;
-    padding: 20px;
+    padding: 15px; /* Reduced from 20px to minimize overflow */
     box-shadow: -2px 0 4px rgba(0, 0, 0, 0.3);
     z-index: 10000; /* Below icon */
     transition: right 0.3s ease; /* Smooth slide effect */
     overflow-y: auto; /* Scroll if content overflows */
     visibility: hidden; /* Prevent any rendering when hidden */
+    box-sizing: border-box; /* Include padding in width */
 }
 
 .cart-panel.active {
     right: 0; /* Slide in when active */
+    left: 0; /* Anchor to the left side to ensure full visibility */
     visibility: visible; /* Show when active */
 }
 
@@ -389,6 +392,7 @@ footer a:hover {
     }
     .cart-panel.active {
         right: 0;
+        left: 0; /* Ensure left edge is at screen start */
     }
     #cartIcon {
         bottom: 10px;
