@@ -147,11 +147,12 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     window.addEventListener('cartUpdated', () => {
+        console.log('cartUpdated event triggered'); // Debug
         updateCartTotal();
         localStorage.setItem('cart', JSON.stringify(window.cart));
-        if (!isPayPalInitialized && typeof window.initializePayPalButton === 'function') {
+        if (!isPayPalInitialized && !document.querySelector('#cartPaypalButton .paypal-buttons') && typeof window.initializePayPalButton === 'function') {
+            console.log('Attempting to initialize PayPal button from cartUpdated'); // Debug
             window.initializePayPalButton();
-            isPayPalInitialized = true;
         }
     });
 
@@ -162,9 +163,9 @@ document.addEventListener('DOMContentLoaded', () => {
         cartPanel.classList.remove('active');
         cartIcon.addEventListener('click', () => {
             cartPanel.classList.toggle('active');
-            if (cartPanel.classList.contains('active') && !isPayPalInitialized && typeof window.initializePayPalButton === 'function') {
+            if (cartPanel.classList.contains('active') && !isPayPalInitialized && !document.querySelector('#cartPaypalButton .paypal-buttons') && typeof window.initializePayPalButton === 'function') {
+                console.log('Cart opened, attempting to initialize PayPal button'); // Debug
                 window.initializePayPalButton();
-                isPayPalInitialized = true;
             }
         });
     }
@@ -177,15 +178,22 @@ document.addEventListener('DOMContentLoaded', () => {
     updateProductGrid(originalProducts);
 
     window.initializePayPalButton = function() {
-        if (window.paypal && !document.querySelector('#cartPaypalButton .paypal-button')) {
+        console.log('initializePayPalButton called'); // Debug
+        if (window.paypal && !document.querySelector('#cartPaypalButton .paypal-buttons')) {
+            console.log('PayPal SDK available, rendering button'); // Debug
+            // Clear existing content in #cartPaypalButton
+            document.getElementById('cartPaypalButton').innerHTML = '';
+            isPayPalInitialized = true; // Set flag to prevent re-rendering
             paypal.Buttons({
                 createOrder: (data, actions) => {
                     const termsCheckbox = document.getElementById('termsCheckbox');
+                    console.log('createOrder called, termsCheckbox checked:', termsCheckbox.checked); // Debug
                     if (!termsCheckbox.checked) {
                         alert('Please agree to the Terms and Conditions.');
                         return Promise.reject('Terms not accepted');
                     }
                     const cartTotal = document.getElementById('cartTotal').textContent || '0.00';
+                    console.log('Creating order with total:', cartTotal); // Debug
                     return actions.order.create({
                         purchase_units: [{
                             amount: {
@@ -196,19 +204,34 @@ document.addEventListener('DOMContentLoaded', () => {
                     });
                 },
                 onApprove: (data, actions) => {
+                    console.log('Order approved:', data); // Debug
                     return actions.order.capture().then((details) => {
                         alert('Transaction completed by ' + (details.payer.name?.given_name || 'User'));
                         window.cart = {};
                         localStorage.setItem('cart', JSON.stringify(window.cart));
                         document.getElementById('cartItems').innerHTML = '';
                         updateCartTotal();
+                        isPayPalInitialized = false; // Allow re-initialization after checkout
                     });
                 },
                 onError: (err) => {
-                    console.error('PayPal Button Error:', err);
+                    console.error('PayPal Button Error:', err); // Debug
+                    isPayPalInitialized = false; // Retry on error
                 }
-            }).render('#cartPaypalButton');
-            console.log('PayPal button initialized');
+            }).render('#cartPaypalButton').then(() => {
+                console.log('PayPal button rendered successfully'); // Debug
+            }).catch(err => {
+                console.error('PayPal button rendering failed:', err); // Debug
+                document.getElementById('cartPaypalButton').innerHTML = '<p>PayPal is unavailable. Please try again later.</p>';
+                isPayPalInitialized = false; // Retry on error
+            });
+        } else {
+            if (!window.paypal) {
+                console.error('PayPal SDK not loaded'); // Debug
+                document.getElementById('cartPaypalButton').innerHTML = '<p>PayPal is unavailable. Please try again later.</p>';
+            } else {
+                console.log('PayPal button already exists, skipping render'); // Debug
+            }
         }
     };
 });

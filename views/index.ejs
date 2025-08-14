@@ -79,7 +79,8 @@
         <%- JSON.stringify(products) %>
     </script>
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-    <script src="/js/products.js"></script> <!-- Ensure products.js is loaded first -->
-    <script src="/js/script.js"></script> <!-- Remove type="module" -->
+    <script src="https://www.sandbox.paypal.com/sdk/js?client-id=<%= clientId %>&currency=USD"></script>
+    <script src="/js/products.js"></script>
+    <script src="/js/script.js"></script>
 </body>
 </html>
