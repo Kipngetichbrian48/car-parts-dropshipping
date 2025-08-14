@@ -1,57 +1,83 @@
-import { addToCart, updateCartTotal } from './products.js';
-
 console.log('script.js loaded');
 
 document.addEventListener('DOMContentLoaded', () => {
-    console.log('DOM fully loaded, addToCart is available:', typeof addToCart === 'function');
-
-    // Initialize cart
-    window.cart = window.cart || {};
-
-    // Load products data
+    window.cart = JSON.parse(localStorage.getItem('cart')) || {};
     const productsDataRaw = document.getElementById('products-data').textContent;
     let productsData = [];
     try {
         productsData = JSON.parse(productsDataRaw);
-        console.log('Parsed products data:', productsData.length, 'items');
-        // Set window.products for addToCart in products.js
         window.products = productsData;
+        console.log('Parsed products:', window.products);
         console.log('window.products set:', window.products.length, 'items');
     } catch (e) {
         console.error('Failed to parse products data:', e);
         return;
     }
 
-    // Store original products for reset
     const originalProducts = [...productsData];
-
-    // Flag to track PayPal button initialization
     let isPayPalInitialized = false;
 
-    // Initialize search
     const searchForm = document.getElementById('searchForm');
     const searchInput = document.getElementById('searchInput');
     const resetSearch = document.getElementById('resetSearch');
     const productGrid = document.getElementById('productGrid');
+    const categoryFilter = document.getElementById('categoryFilter');
 
-    // Handle search
-    searchForm.addEventListener('submit', (e) => {
-        e.preventDefault();
+    // Search with Axios
+    searchInput.addEventListener('input', async () => {
         const searchTerm = searchInput.value.trim().toLowerCase();
-        const filteredProducts = searchTerm
-            ? originalProducts.filter(product => product.title.toLowerCase().includes(searchTerm))
-            : [...originalProducts];
-        updateProductGrid(filteredProducts);
+        try {
+            const response = await window.axios.get('/data/products.json');
+            const products = response.data.filter(product =>
+                product.title.toLowerCase().includes(searchTerm)
+            );
+            console.log('Axios search products:', products);
+            updateProductGrid(products);
+        } catch (error) {
+            console.error('Error fetching products for search:', error);
+            const filteredProducts = originalProducts.filter(product =>
+                product.title.toLowerCase().includes(searchTerm)
+            );
+            console.log('Fallback search products:', filteredProducts);
+            updateProductGrid(filteredProducts);
+        }
     });
 
-    // Handle reset
+    searchForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const searchTerm = searchInput.value.trim().toLowerCase();
+        const selectedCategory = categoryFilter.value;
+        try {
+            const response = await window.axios.get('/data/products.json');
+            const filteredProducts = response.data.filter(product => {
+                const matchesSearch = searchTerm ? product.title.toLowerCase().includes(searchTerm) : true;
+                const matchesCategory = selectedCategory ? product.category === selectedCategory : true;
+                return matchesSearch && matchesCategory;
+            });
+            console.log('Axios filtered products:', filteredProducts);
+            updateProductGrid(filteredProducts);
+        } catch (error) {
+            console.error('Error fetching products:', error);
+            const filteredProducts = originalProducts.filter(product => {
+                const matchesSearch = searchTerm ? product.title.toLowerCase().includes(searchTerm) : true;
+                const matchesCategory = selectedCategory ? product.category === selectedCategory : true;
+                return matchesSearch && matchesCategory;
+            });
+            console.log('Fallback filtered products:', filteredProducts);
+            updateProductGrid(filteredProducts);
+        }
+    });
+
     resetSearch.addEventListener('click', () => {
         searchInput.value = '';
+        categoryFilter.value = '';
+        document.querySelectorAll('.category-btn').forEach(btn => btn.classList.remove('active'));
+        document.querySelector('.category-btn[data-category=""]').classList.add('active');
         updateProductGrid(originalProducts);
     });
 
-    // Update product grid
     function updateProductGrid(products) {
+        console.log('Rendering products:', products);
         productGrid.innerHTML = '';
         if (products.length === 0) {
             productGrid.innerHTML = '<p>No products match your search.</p>';
@@ -77,18 +103,16 @@ document.addEventListener('DOMContentLoaded', () => {
                         `}
                     </div>
                 </div>
-                <h3>${product.title || 'Unnamed Product'}</h3>
+                <h3><a href="/product/${product.id}">${product.title || 'Unnamed Product'}</a></h3>
                 <p>$${parseFloat(product.price || 0).toFixed(2)}</p>
                 <button class="add-to-cart" data-product-id="${product.id}">Add to Cart</button>
             `;
             productGrid.appendChild(div);
         });
 
-        // Reattach event listeners for Add to Cart buttons
         productGrid.querySelectorAll('.add-to-cart').forEach(button => {
             button.addEventListener('click', (e) => {
                 const productId = e.currentTarget.getAttribute('data-product-id');
-                console.log('Add to Cart clicked for productId:', productId);
                 try {
                     addToCart(productId);
                 } catch (error) {
@@ -96,73 +120,71 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             });
         });
+
+        productGrid.querySelectorAll('.carousel-thumbnails .thumbnail img').forEach(thumb => {
+            thumb.addEventListener('click', (e) => {
+                const carousel = e.target.closest('.product-carousel');
+                const mainImage = carousel.querySelector('.main-image');
+                mainImage.src = e.target.src;
+                mainImage.alt = e.target.alt;
+            });
+        });
     }
 
-    // Initialize cart buttons for initial page load
-    productGrid.querySelectorAll('button[data-product-id]').forEach(button => {
-        button.addEventListener('click', (e) => {
-            const productId = e.currentTarget.getAttribute('data-product-id');
-            console.log('Initial Add to Cart clicked for productId:', productId);
-            try {
-                addToCart(productId);
-            } catch (error) {
-                console.error('Error calling addToCart for productId:', productId, error);
-            }
+    document.querySelectorAll('.category-btn').forEach(button => {
+        button.addEventListener('click', () => {
+            document.querySelectorAll('.category-btn').forEach(btn => btn.classList.remove('active'));
+            button.classList.add('active');
+            const category = button.getAttribute('data-category');
+            const filteredProducts = category
+                ? originalProducts.filter(product => product.category === category)
+                : [...originalProducts];
+            console.log('Category filtered products:', filteredProducts);
+            updateProductGrid(filteredProducts);
+            categoryFilter.value = category;
+            searchInput.value = '';
         });
     });
 
-    // Update cart on custom event
     window.addEventListener('cartUpdated', () => {
-        console.log('cartUpdated event received');
-        if (typeof updateCartTotal === 'function') {
-            updateCartTotal();
-            console.log('Cart total updated');
-            // Initialize PayPal button only if not already initialized
-            if (!isPayPalInitialized && typeof window.initializePayPalButton === 'function') {
-                window.initializePayPalButton();
-                isPayPalInitialized = true;
-            }
-        } else {
-            console.error('updateCartTotal function not available');
+        updateCartTotal();
+        localStorage.setItem('cart', JSON.stringify(window.cart));
+        if (!isPayPalInitialized && typeof window.initializePayPalButton === 'function') {
+            window.initializePayPalButton();
+            isPayPalInitialized = true;
         }
     });
 
-    // Toggle cart panel on icon click
     const cartIcon = document.getElementById('cartIcon');
     const cartPanel = document.getElementById('cartPanel');
     const closeCart = document.getElementById('closeCart');
     if (cartIcon && cartPanel) {
-        // Ensure panel starts hidden
         cartPanel.classList.remove('active');
         cartIcon.addEventListener('click', () => {
             cartPanel.classList.toggle('active');
-            console.log('Cart panel toggled');
-            // Initialize PayPal button only on first open if not already initialized
             if (cartPanel.classList.contains('active') && !isPayPalInitialized && typeof window.initializePayPalButton === 'function') {
                 window.initializePayPalButton();
                 isPayPalInitialized = true;
             }
         });
-    } else {
-        console.error('Cart icon or panel not found');
     }
     if (closeCart) {
         closeCart.addEventListener('click', () => {
             cartPanel.classList.remove('active');
-            console.log('Cart panel closed');
         });
-    } else {
-        console.error('Close cart button not found');
     }
 
-    // Initial grid render
     updateProductGrid(originalProducts);
 
-    // Define initializePayPalButton globally
     window.initializePayPalButton = function() {
         if (window.paypal && !document.querySelector('#cartPaypalButton .paypal-button')) {
             paypal.Buttons({
                 createOrder: (data, actions) => {
+                    const termsCheckbox = document.getElementById('termsCheckbox');
+                    if (!termsCheckbox.checked) {
+                        alert('Please agree to the Terms and Conditions.');
+                        return Promise.reject('Terms not accepted');
+                    }
                     const cartTotal = document.getElementById('cartTotal').textContent || '0.00';
                     return actions.order.create({
                         purchase_units: [{
@@ -176,6 +198,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 onApprove: (data, actions) => {
                     return actions.order.capture().then((details) => {
                         alert('Transaction completed by ' + (details.payer.name?.given_name || 'User'));
+                        window.cart = {};
+                        localStorage.setItem('cart', JSON.stringify(window.cart));
+                        document.getElementById('cartItems').innerHTML = '';
+                        updateCartTotal();
                     });
                 },
                 onError: (err) => {
@@ -183,8 +209,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             }).render('#cartPaypalButton');
             console.log('PayPal button initialized');
-        } else {
-            console.log('PayPal button already initialized or SDK not available');
         }
     };
 });

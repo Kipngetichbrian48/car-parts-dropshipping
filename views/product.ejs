@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= product.title %> | Braviem</title>
+    <meta name="description" content="Buy <%= product.title %> at Braviem. Fast shipping and great prices.">
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+    <header>
+        <h1>Braviem</h1>
+        <p><a href="/">Back to Home</a></p>
+    </header>
+    <main>
+        <section>
+            <h2><%= product.title %></h2>
+            <div class="product-carousel">
+                <div class="carousel-main">
+                    <img src="<%= product.image %>" alt="<%= product.title %> - Main Image" class="main-image" onerror="this.src='https://via.placeholder.com/150';">
+                </div>
+                <div class="carousel-thumbnails">
+                    <% product.additionalImages.forEach((img, index) => { %>
+                        <div class="carousel-slide thumbnail">
+                            <img src="<%= img %>" alt="<%= product.title %> - Thumbnail <%= index + 1 %>" onerror="this.src='https://via.placeholder.com/60';">
+                        </div>
+                    <% }); %>
+                </div>
+            </div>
+            <p>Price: $<%= product.price.toFixed(2) %></p>
+            <button class="add-to-cart" data-product-id="<%= product.id %>">Add to Cart</button>
+        </section>
+    </main>
+    <footer>
+        <p>Shipping: 2–6 weeks via trusted partners.</p>
+        <p>Licensed under the <a href="/license">MIT License</a>.</p>
+    </footer>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script src="https://www.sandbox.paypal.com/sdk/js?client-id=<%= clientId %>&currency=USD" async></script>
+    <script src="/js/script.js" type="module"></script>
+</body>
+</html>

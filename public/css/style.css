@@ -2,12 +2,12 @@ body {
     font-family: 'Arial', sans-serif;
     margin: 0;
     padding: 0;
-    background-color: #1a1a1a; /* Dark background for a garage vibe */
-    color: #e0e0e0; /* Light text for contrast */
-    overflow-x: hidden; /* Prevent horizontal overflow */
+    background-color: #1a1a1a;
+    color: #e0e0e0;
+    overflow-x: hidden;
 }
 header {
-    background-color: #2a2a72; /* Deep blue like a car paint */
+    background-color: #2a2a72;
     color: white;
     padding: 20px;
     text-align: center;
@@ -15,56 +15,70 @@ header {
 }
 header h1 {
     margin: 0;
-    font-size: 3.5em; /* Increased for prominence as the brand name */
+    font-size: 3.5em;
     text-transform: uppercase;
     letter-spacing: 2px;
 }
 header p {
-    font-size: 1.2em; /* Reduced from implied h1 size to fit as tagline */
-    margin: 5px 0 0; /* Added top margin to space from h1 */
-    font-weight: normal; /* Ensure it’s not bold like h1 */
+    font-size: 1.2em;
+    margin: 5px 0 0;
+    font-weight: normal;
 }
 main {
     padding: 20px;
     max-width: 1200px;
     margin: 0 auto;
-    overflow-x: hidden; /* Prevent unwanted overflow */
+    overflow-x: hidden;
 }
-#productGrid div {
-    /* Removed border, using shadow instead */
-    padding: 10px; /* Reduced from 15px to align with card content */
-    margin: 15px; /* Maintain external spacing between cards */
-    display: inline-block;
-    background-color: #333; /* Enhanced contrast instead of border */
+#productGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 15px;
+}
+.product-card {
+    padding: 8px;
+    margin: 10px;
+    background-color: #333;
     border-radius: 8px;
     transition: transform 0.3s;
-    height: auto; /* Reset to auto to fit content */
-    box-shadow: 0 2px 4px rgba(255, 69, 0, 0.3); /* Subtle orange shadow */
+    text-align: center;
+    width: 250px;
+    min-height: 300px;
+    box-sizing: border-box;
+    box-shadow: 0 2px 4px rgba(255, 69, 0, 0.3);
 }
-#productGrid div:hover {
-    transform: scale(1.05); /* Zoom effect on hover */
-    box-shadow: 0 4px 8px rgba(255, 69, 0, 0.5); /* Stronger shadow on hover */
+.product-card:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 8px rgba(255, 69, 0, 0.5);
 }
-#productGrid h3 {
-    color: #ffcc00; /* Gold for a premium feel */
+.product-card h3 {
+    color: #ffcc00;
     margin: 0 0 10px;
-    text-align: center; /* Ensure text is centered */
+    text-align: center;
+    font-size: 1.2em;
 }
-#productGrid img {
+.product-card h3 a {
+    color: #ffcc00;
+    text-decoration: none;
+}
+.product-card h3 a:hover {
+    text-decoration: underline;
+}
+.product-card img {
     max-width: 100%;
     height: auto;
 }
-#productGrid button {
-    background-color: #ff4500; /* Orange for action */
+.product-card button {
+    background-color: #ff4500;
     color: white;
     border: none;
     padding: 8px 16px;
     cursor: pointer;
     border-radius: 4px;
-    display: block; /* Ensure button is block-level and centered */
-    margin: 0 auto; /* Center the button */
+    display: block;
+    margin: 0 auto;
 }
-#productGrid button:hover {
+.product-card button:hover {
     background-color: #e03a00;
 }
 #checkout {
@@ -72,7 +86,7 @@ main {
     background-color: #222;
     padding: 15px;
     border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3); /* Subtle shadow */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 #checkout h2 {
     color: #ffcc00;
@@ -89,116 +103,65 @@ main {
 #checkoutButton:hover, #checkoutForm button:hover {
     background-color: #e03a00;
 }
-@media (max-width: 600px) {
-    #productGrid div {
-        display: block;
-        width: 90%;
-        margin: 15px auto; /* Maintain margin for mobile */
-    }
-}
-#paypal-button-container {
-    margin: 10px 0;
-}
-#ignitePurchase {
-    padding: 10px 20px;
-    background-color: #ff9900;
-    border: none;
-    color: white;
-    cursor: pointer;
-}
-#productGrid {
-    display: flex;
-    flex-wrap: wrap; /* Reverted to vertical layout */
-    gap: 20px; /* Maintain gap between product cards */
-}
-#productGrid .product {
-    padding: 10px;
-    text-align: center;
-}
-/* Adjusted Vertical Layout with Reduced Internal Image Spacing */
 .product-carousel {
     position: relative;
-    width: 100%; /* Match the card's content width */
-    margin: 0 auto; /* Center the carousel within the card */
+    width: 100%;
+    margin: 0 auto;
     overflow: hidden;
     display: flex;
     flex-direction: column;
-    justify-content: center; /* Center vertically */
-    align-items: center; /* Center horizontally */
-    padding: 0; /* Remove padding to reduce left offset */
-    box-sizing: border-box; /* Include any padding in width */
+    justify-content: center;
+    align-items: center;
+    padding: 0;
+    box-sizing: border-box;
 }
-
 .carousel-main {
     width: 100%;
-    min-height: 150px; /* Reduced from 200px to bring images closer */
+    min-height: 120px;
     overflow: hidden;
-    text-align: center; /* Center the main image */
-    padding: 0; /* Remove padding to avoid shifting */
+    text-align: center;
+    padding: 0;
 }
-
 .main-image {
     width: 100%;
     height: 100%;
-    object-fit: contain; /* Ensures the image fits without stretching */
-    display: block; /* Remove any inline quirks */
-    margin: 0 auto; /* Center the image */
-    max-width: 270px; /* Reduce max-width to fit within padding, adjust as needed */
+    object-fit: contain;
+    display: block;
+    margin: 0 auto;
+    max-width: 220px;
 }
-
 .carousel-thumbnails {
     width: 100%;
     display: flex;
     flex-direction: row;
-    overflow-x: auto; /* Horizontal scroll if needed */
-    padding: 0; /* Removed padding to reduce vertical gap */
-    min-height: 60px; /* Reduced from 80px to bring images closer */
-    justify-content: center; /* Center thumbnails horizontally */
-    margin-top: 5px; /* Small spacing above thumbnails */
+    overflow-x: auto;
+    padding: 0;
+    min-height: 50px;
+    justify-content: center;
+    margin-top: 5px;
 }
-
 .thumbnail {
-    flex: 0 0 80px; /* Fixed width for each thumbnail */
-    height: 60px; /* Reduced from 80px to match new min-height */
-    margin-right: 2px; /* Reduced from 5px to tighten horizontal spacing */
+    flex: 0 0 70px;
+    height: 50px;
+    margin-right: 2px;
     overflow: hidden;
-    text-align: center; /* Center thumbnail images */
+    text-align: center;
 }
-
 .thumbnail img {
     width: 100%;
     height: 100%;
-    object-fit: cover; /* Crops to fit thumbnail size */
-    /* Removed border for cleaner look */
-    display: block; /* Remove any inline quirks */
-    margin: 0 auto; /* Center the thumbnail image */
+    object-fit: cover;
+    display: block;
+    margin: 0 auto;
+    cursor: pointer;
 }
-
-/* Hide scrollbar for better aesthetics */
 .carousel-thumbnails::-webkit-scrollbar {
-    display: none; /* Hide scrollbar for WebKit browsers */
+    display: none;
 }
 .carousel-thumbnails {
-    -ms-overflow-style: none; /* Hide scrollbar for IE and Edge */
-    scrollbar-width: none; /* Hide scrollbar for Firefox */
+    -ms-overflow-style: none;
+    scrollbar-width: none;
 }
-
-/* Ensure product-card styling complements carousel */
-.product-card {
-    /* Removed border, using shadow and background */
-    padding: 10px; /* Reduced from 15px to decrease left margin effect */
-    margin: 15px; /* Maintain external spacing */
-    display: inline-block;
-    background-color: #333;
-    border-radius: 8px;
-    transition: transform 0.3s;
-    text-align: center; /* Center all content in the card */
-    vertical-align: top;
-    width: 300px; /* Fixed width to avoid overlap */
-    min-height: 350px; /* Adjusted to fit reduced image heights */
-    box-sizing: border-box; /* Include padding in width calculation */
-}
-/* Search Filter Styles */
 #searchFilter {
     background-color: #222;
     padding: 15px;
@@ -208,21 +171,18 @@ main {
     max-width: 1200px;
     text-align: center;
 }
-
 #searchFilter h2 {
     color: #ffcc00;
     margin-top: 0;
     font-size: 1.8em;
 }
-
 #searchForm {
     display: flex;
     gap: 10px;
     justify-content: center;
     align-items: center;
 }
-
-#searchForm input[type="text"] {
+#searchForm select, #searchForm input[type="text"] {
     padding: 8px 12px;
     border-radius: 4px;
     border: none;
@@ -231,7 +191,6 @@ main {
     background-color: #444;
     width: 200px;
 }
-
 #searchForm button {
     padding: 8px 12px;
     border-radius: 4px;
@@ -241,30 +200,38 @@ main {
     background-color: #ff4500;
     cursor: pointer;
 }
-
 #searchForm button:hover {
     background-color: #e03a00;
 }
-
 #searchForm button#resetSearch {
     background-color: #666;
 }
-
 #searchForm button#resetSearch:hover {
     background-color: #555;
 }
-
-@media (max-width: 600px) {
-    #searchForm {
-        flex-direction: column;
-    }
-    #searchForm input[type="text"], #searchForm button {
-        width: 100%;
-        max-width: 300px;
-    }
+#categoryNav {
+    background-color: #222;
+    padding: 10px;
+    margin: 20px auto;
+    border-radius: 8px;
+    text-align: center;
+    max-width: 1200px;
 }
-
-/* Footer Styles */
+.category-btn {
+    background-color: #ff4500;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    margin: 5px;
+    border-radius: 4px;
+    cursor: pointer;
+}
+.category-btn:hover {
+    background-color: #e03a00;
+}
+.category-btn.active {
+    background-color: #ff9900;
+}
 footer {
     background-color: #222;
     color: #fff;
@@ -274,34 +241,23 @@ footer {
     border-top: 2px solid #ffcc00;
     box-shadow: 0 -2px 4px rgba(0, 0, 0, 0.3);
 }
-
 footer p {
     margin: 5px 0;
     font-size: 1em;
 }
-
 footer a {
     color: #ffcc00;
     text-decoration: none;
 }
-
 footer a:hover {
     text-decoration: underline;
-    color: #e6b800; /* Slightly darker gold on hover */
+    color: #e6b800;
 }
-
-@media (max-width: 600px) {
-    footer {
-        padding: 15px;
-    }
-}
-
-/* Floating Cart Icon Styles */
 #cartIcon {
     position: fixed;
     bottom: 20px;
-    right: 20px; /* Reset to bottom-right corner */
-    background-color: #ff4500; /* Orange to match buttons */
+    right: 20px;
+    background-color: #ff4500;
     color: white;
     border: none;
     border-radius: 50%;
@@ -310,60 +266,50 @@ footer a:hover {
     font-size: 1.5em;
     cursor: pointer;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-    z-index: 10001; /* Increased to stay above panel */
-    display: flex; /* Center the icon */
+    z-index: 10001;
+    display: flex;
     align-items: center;
     justify-content: center;
 }
-
 #cartIcon:hover {
     background-color: #e03a00;
 }
-
-/* Cart Panel Styles */
 .cart-panel {
     position: fixed;
     top: 0;
-    right: -320px; /* Adjusted to fully hide with padding (300px width + 20px padding) */
-    width: 100%; /* Use full width to avoid clipping */
+    right: -320px;
+    width: 300px;
     height: 100%;
     background-color: #222;
     color: #fff;
-    padding: 15px; /* Reduced from 20px to minimize overflow */
+    padding: 15px;
     box-shadow: -2px 0 4px rgba(0, 0, 0, 0.3);
-    z-index: 10000; /* Below icon */
-    transition: right 0.3s ease; /* Smooth slide effect */
-    overflow-y: auto; /* Scroll if content overflows */
-    visibility: hidden; /* Prevent any rendering when hidden */
-    box-sizing: border-box; /* Include padding in width */
+    z-index: 10000;
+    transition: right 0.3s ease;
+    overflow-y: auto;
+    visibility: hidden;
+    box-sizing: border-box;
 }
-
 .cart-panel.active {
-    right: 0; /* Slide in when active */
-    left: 0; /* Anchor to the left side to ensure full visibility */
-    visibility: visible; /* Show when active */
+    right: 0;
+    visibility: visible;
 }
-
 #cartPanel h2 {
     color: #ffcc00;
     margin-top: 0;
 }
-
 #cartPanel ul {
     list-style: none;
     padding: 0;
 }
-
 #cartPanel #cartTotal {
     font-weight: bold;
     color: #ff4500;
 }
-
 #cartPanel #cartPaypalButton {
     margin: 10px 0;
-    display: block !important; /* Ensure PayPal button container is visible */
+    display: block !important;
 }
-
 #closeCart {
     position: absolute;
     top: 10px;
@@ -380,19 +326,48 @@ footer a:hover {
     align-items: center;
     justify-content: center;
 }
-
 #closeCart:hover {
     background-color: #e03a00;
 }
-
+.terms-conditions {
+    margin: 10px 0;
+    text-align: center;
+}
+.terms-conditions label {
+    color: #e0e0e0;
+}
+.terms-conditions a {
+    color: #ffcc00;
+    text-decoration: none;
+}
+.terms-conditions a:hover {
+    text-decoration: underline;
+}
 @media (max-width: 600px) {
+    #productGrid {
+        grid-template-columns: 1fr;
+    }
+    .product-card {
+        width: 100%;
+        max-width: 300px;
+        margin: 10px auto;
+    }
+    #searchForm {
+        flex-direction: column;
+    }
+    #searchForm select, #searchForm input[type="text"], #searchForm button {
+        width: 100%;
+        max-width: 300px;
+    }
+    footer {
+        padding: 15px;
+    }
     .cart-panel {
         width: 100%;
-        right: -100%; /* Fully hide off-screen on mobile */
+        right: -100%;
     }
     .cart-panel.active {
         right: 0;
-        left: 0; /* Ensure left edge is at screen start */
     }
     #cartIcon {
         bottom: 10px;
@@ -406,11 +381,7 @@ footer a:hover {
         height: 25px;
         font-size: 1em;
     }
-    /* Ensure main content is readable when panel is hidden */
     main {
-        padding-bottom: 60px; /* Add space to avoid overlap with icon */
-    }
-    #productGrid div {
-        margin-bottom: 40px; /* Increase spacing for readability */
+        padding-bottom: 60px;
     }
 }
