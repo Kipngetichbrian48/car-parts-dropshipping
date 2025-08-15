@@ -7,8 +7,8 @@ document.addEventListener('DOMContentLoaded', () => {
     try {
         productsData = JSON.parse(productsDataRaw);
         window.products = productsData;
-        console.log('Parsed products:', window.products);
-        console.log('window.products set:', window.products.length, 'items');
+        console.log('Initial products:', productsData);
+        console.log('window.products set:', productsData.length, 'items');
     } catch (e) {
         console.error('Failed to parse products data:', e);
         return;
@@ -16,6 +16,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const originalProducts = [...productsData];
     let isPayPalInitialized = false;
+    let searchTimeout = null;
 
     const searchForm = document.getElementById('searchForm');
     const searchInput = document.getElementById('searchInput');
@@ -23,43 +24,66 @@ document.addEventListener('DOMContentLoaded', () => {
     const productGrid = document.getElementById('productGrid');
     const categoryFilter = document.getElementById('categoryFilter');
 
-    // Search with Axios
-    searchInput.addEventListener('input', async () => {
-        const searchTerm = searchInput.value.trim().toLowerCase();
-        try {
-            const response = await window.axios.get('/data/products.json');
-            const products = response.data.filter(product =>
-                product.title.toLowerCase().includes(searchTerm)
-            );
-            console.log('Axios search products:', products);
-            updateProductGrid(products);
-        } catch (error) {
-            console.error('Error fetching products for search:', error);
-            const filteredProducts = originalProducts.filter(product =>
-                product.title.toLowerCase().includes(searchTerm)
-            );
-            console.log('Fallback search products:', filteredProducts);
-            updateProductGrid(filteredProducts);
-        }
+    searchInput.addEventListener('input', () => {
+        clearTimeout(searchTimeout);
+        searchTimeout = setTimeout(async () => {
+            const searchTerm = searchInput.value.trim().toLowerCase();
+            try {
+                const response = await window.axios.get('/data/products.json');
+                console.log('Axios response data:', response.data); // Debug
+                const products = response.data
+                    ? response.data.map(product => ({
+                          id: product.id || `temp-id-${Math.random().toString(36).substr(2, 9)}`,
+                          title: product.title || 'Unnamed Product',
+                          price: parseFloat(product.price) || 0,
+                          image: product.images && product.images[0] ? product.images[0] : 'https://via.placeholder.com/150',
+                          additionalImages: product.images && product.images.length > 1 ? product.images.slice(1) : [],
+                          category: product.category || 'Uncategorized'
+                      })).filter(product =>
+                          product.title && product.title.toLowerCase().includes(searchTerm)
+                      )
+                    : [];
+                console.log('Axios search products:', products);
+                updateProductGrid(products);
+            } catch (error) {
+                console.error('Error fetching products for search:', error);
+                const filteredProducts = originalProducts.filter(product =>
+                    product.title && product.title.toLowerCase().includes(searchTerm)
+                );
+                console.log('Fallback search products:', filteredProducts);
+                updateProductGrid(filteredProducts);
+            }
+        }, 500); // Increased to 500ms
     });
 
     searchForm.addEventListener('submit', async (e) => {
         e.preventDefault();
+        clearTimeout(searchTimeout);
         const searchTerm = searchInput.value.trim().toLowerCase();
         const selectedCategory = categoryFilter.value;
         try {
             const response = await window.axios.get('/data/products.json');
-            const filteredProducts = response.data.filter(product => {
-                const matchesSearch = searchTerm ? product.title.toLowerCase().includes(searchTerm) : true;
-                const matchesCategory = selectedCategory ? product.category === selectedCategory : true;
-                return matchesSearch && matchesCategory;
-            });
+            console.log('Axios response data (submit):', response.data); // Debug
+            const filteredProducts = response.data
+                ? response.data.map(product => ({
+                      id: product.id || `temp-id-${Math.random().toString(36).substr(2, 9)}`,
+                      title: product.title || 'Unnamed Product',
+                      price: parseFloat(product.price) || 0,
+                      image: product.images && product.images[0] ? product.images[0] : 'https://via.placeholder.com/150',
+                      additionalImages: product.images && product.images.length > 1 ? product.images.slice(1) : [],
+                      category: product.category || 'Uncategorized'
+                  })).filter(product => {
+                      const matchesSearch = searchTerm ? product.title && product.title.toLowerCase().includes(searchTerm) : true;
+                      const matchesCategory = selectedCategory ? product.category === selectedCategory : true;
+                      return matchesSearch && matchesCategory;
+                  })
+                : [];
             console.log('Axios filtered products:', filteredProducts);
             updateProductGrid(filteredProducts);
         } catch (error) {
             console.error('Error fetching products:', error);
             const filteredProducts = originalProducts.filter(product => {
-                const matchesSearch = searchTerm ? product.title.toLowerCase().includes(searchTerm) : true;
+                const matchesSearch = searchTerm ? product.title && product.title.toLowerCase().includes(searchTerm) : true;
                 const matchesCategory = selectedCategory ? product.category === selectedCategory : true;
                 return matchesSearch && matchesCategory;
             });
@@ -79,33 +103,38 @@ document.addEventListener('DOMContentLoaded', () => {
     function updateProductGrid(products) {
         console.log('Rendering products:', products);
         productGrid.innerHTML = '';
-        if (products.length === 0) {
+        if (!products || products.length === 0) {
             productGrid.innerHTML = '<p>No products match your search.</p>';
             return;
         }
         products.forEach(product => {
+            const safeTitle = product.title ? product.title.replace(/[<>&"']/g, '') : 'Unnamed Product';
+            const safeImage = product.image && product.image !== '' ? product.image : 'https://via.placeholder.com/150';
+            const safeAdditionalImages = Array.isArray(product.additionalImages) ? product.additionalImages : [];
+            console.log(`Product ${product.id}: main image=${safeImage}, thumbnails=`, safeAdditionalImages); // Debug
+
             const div = document.createElement('div');
             div.className = 'product-card';
             div.innerHTML = `
-                <div class="product-carousel" data-product-id="${product.id}">
+                <div class="product-carousel" data-product-id="${product.id || 'unknown'}">
                     <div class="carousel-main">
-                        <img src="${product.image || 'https://via.placeholder.com/150'}" alt="${product.title || 'Product'} - Main Image" class="main-image" onerror="this.src='https://via.placeholder.com/150';">
+                        <img src="${safeImage}" alt="${safeTitle} - Main Image" class="main-image" onerror="this.onerror=null; console.error('Failed to load image: ${safeImage}'); this.src='https://via.placeholder.com/150';">
                     </div>
                     <div class="carousel-thumbnails">
-                        ${(product.additionalImages || []).map((img, index) => `
+                        ${safeAdditionalImages.length > 0 ? safeAdditionalImages.map((img, index) => `
                             <div class="carousel-slide thumbnail">
-                                <img src="${img}" alt="${product.title || 'Product'} - Thumbnail ${index + 1}" onerror="this.src='https://via.placeholder.com/60';">
+                                <img src="${img && img !== '' ? img : 'https://via.placeholder.com/60'}" alt="${safeTitle} - Thumbnail ${index + 1}" onerror="this.onerror=null; console.error('Failed to load thumbnail: ${img}'); this.src='https://via.placeholder.com/60';">
                             </div>
-                        `).join('') || `
+                        `).join('') : `
                             <div class="carousel-slide thumbnail">
-                                <img src="https://via.placeholder.com/60" alt="No Thumbnail">
+                                <img src="https://via.placeholder.com/60" alt="${safeTitle} - No Thumbnail" onerror="this.onerror=null; console.error('Failed to load default thumbnail'); this.src='https://via.placeholder.com/60';">
                             </div>
                         `}
                     </div>
                 </div>
-                <h3><a href="/product/${product.id}">${product.title || 'Unnamed Product'}</a></h3>
+                <h3><a href="/product/${product.id || 'unknown'}">${safeTitle}</a></h3>
                 <p>$${parseFloat(product.price || 0).toFixed(2)}</p>
-                <button class="add-to-cart" data-product-id="${product.id}">Add to Cart</button>
+                <button class="add-to-cart" data-product-id="${product.id || 'unknown'}">Add to Cart</button>
             `;
             productGrid.appendChild(div);
         });
@@ -139,7 +168,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const filteredProducts = category
                 ? originalProducts.filter(product => product.category === category)
                 : [...originalProducts];
-            console.log('Category filtered products:', filteredProducts);
+            console.log('Category filtered products:', filteredProducts, 'Category:', category);
             updateProductGrid(filteredProducts);
             categoryFilter.value = category;
             searchInput.value = '';
@@ -147,11 +176,11 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     window.addEventListener('cartUpdated', () => {
-        console.log('cartUpdated event triggered'); // Debug
+        console.log('cartUpdated event triggered');
         updateCartTotal();
         localStorage.setItem('cart', JSON.stringify(window.cart));
         if (!isPayPalInitialized && !document.querySelector('#cartPaypalButton .paypal-buttons') && typeof window.initializePayPalButton === 'function') {
-            console.log('Attempting to initialize PayPal button from cartUpdated'); // Debug
+            console.log('Attempting to initialize PayPal button from cartUpdated');
             window.initializePayPalButton();
         }
     });
@@ -164,7 +193,7 @@ document.addEventListener('DOMContentLoaded', () => {
         cartIcon.addEventListener('click', () => {
             cartPanel.classList.toggle('active');
             if (cartPanel.classList.contains('active') && !isPayPalInitialized && !document.querySelector('#cartPaypalButton .paypal-buttons') && typeof window.initializePayPalButton === 'function') {
-                console.log('Cart opened, attempting to initialize PayPal button'); // Debug
+                console.log('Cart opened, attempting to initialize PayPal button');
                 window.initializePayPalButton();
             }
         });
@@ -178,22 +207,21 @@ document.addEventListener('DOMContentLoaded', () => {
     updateProductGrid(originalProducts);
 
     window.initializePayPalButton = function() {
-        console.log('initializePayPalButton called'); // Debug
+        console.log('initializePayPalButton called');
         if (window.paypal && !document.querySelector('#cartPaypalButton .paypal-buttons')) {
-            console.log('PayPal SDK available, rendering button'); // Debug
-            // Clear existing content in #cartPaypalButton
+            console.log('PayPal SDK available, rendering button');
             document.getElementById('cartPaypalButton').innerHTML = '';
-            isPayPalInitialized = true; // Set flag to prevent re-rendering
+            isPayPalInitialized = true;
             paypal.Buttons({
                 createOrder: (data, actions) => {
                     const termsCheckbox = document.getElementById('termsCheckbox');
-                    console.log('createOrder called, termsCheckbox checked:', termsCheckbox.checked); // Debug
+                    console.log('createOrder called, termsCheckbox checked:', termsCheckbox.checked);
                     if (!termsCheckbox.checked) {
                         alert('Please agree to the Terms and Conditions.');
                         return Promise.reject('Terms not accepted');
                     }
                     const cartTotal = document.getElementById('cartTotal').textContent || '0.00';
-                    console.log('Creating order with total:', cartTotal); // Debug
+                    console.log('Creating order with total:', cartTotal);
                     return actions.order.create({
                         purchase_units: [{
                             amount: {
@@ -204,33 +232,33 @@ document.addEventListener('DOMContentLoaded', () => {
                     });
                 },
                 onApprove: (data, actions) => {
-                    console.log('Order approved:', data); // Debug
+                    console.log('Order approved:', data);
                     return actions.order.capture().then((details) => {
                         alert('Transaction completed by ' + (details.payer.name?.given_name || 'User'));
                         window.cart = {};
                         localStorage.setItem('cart', JSON.stringify(window.cart));
                         document.getElementById('cartItems').innerHTML = '';
                         updateCartTotal();
-                        isPayPalInitialized = false; // Allow re-initialization after checkout
+                        isPayPalInitialized = false;
                     });
                 },
                 onError: (err) => {
-                    console.error('PayPal Button Error:', err); // Debug
-                    isPayPalInitialized = false; // Retry on error
+                    console.error('PayPal Button Error:', err);
+                    isPayPalInitialized = false;
                 }
             }).render('#cartPaypalButton').then(() => {
-                console.log('PayPal button rendered successfully'); // Debug
+                console.log('PayPal button rendered successfully');
             }).catch(err => {
-                console.error('PayPal button rendering failed:', err); // Debug
+                console.error('PayPal button rendering failed:', err);
                 document.getElementById('cartPaypalButton').innerHTML = '<p>PayPal is unavailable. Please try again later.</p>';
-                isPayPalInitialized = false; // Retry on error
+                isPayPalInitialized = false;
             });
         } else {
             if (!window.paypal) {
-                console.error('PayPal SDK not loaded'); // Debug
+                console.error('PayPal SDK not loaded');
                 document.getElementById('cartPaypalButton').innerHTML = '<p>PayPal is unavailable. Please try again later.</p>';
             } else {
-                console.log('PayPal button already exists, skipping render'); // Debug
+                console.log('PayPal button already exists, skipping render');
             }
         }
     };
