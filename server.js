@@ -44,6 +44,11 @@ if (existsSync(productsPath)) {
             if (validImages.length < product.images?.length) {
                 console.warn(`Invalid image URLs for product ${product.id || 'unknown'}:`, product.images);
             }
+            const imageResolutions = validImages.map(img => {
+                const match = img.match(/_(\d+x\d+)\./);
+                return match ? match[1] : 'unknown';
+            });
+            console.log(`Product ${product.id || 'unknown'} image resolutions:`, imageResolutions);
             return {
                 id: product.id || `temp-id-${Math.random().toString(36).substr(2, 9)}`,
                 title: product.title || 'Unnamed Product',

@@ -6,6 +6,7 @@ body {
     color: #e0e0e0;
     overflow-x: hidden;
 }
+
 header {
     background-color: #2a2a72;
     color: white;
@@ -13,28 +14,33 @@ header {
     text-align: center;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
 }
+
 header h1 {
     margin: 0;
     font-size: 3.5em;
     text-transform: uppercase;
     letter-spacing: 2px;
 }
+
 header p {
     font-size: 1.2em;
     margin: 5px 0 0;
     font-weight: normal;
 }
+
 main {
     padding: 20px;
     max-width: 1200px;
     margin: 0 auto;
     overflow-x: hidden;
 }
+
 #productGrid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
     gap: 15px;
 }
+
 .product-card {
     padding: 8px;
     margin: 10px;
@@ -47,27 +53,33 @@ main {
     box-sizing: border-box;
     box-shadow: 0 2px 4px rgba(255, 69, 0, 0.3);
 }
+
 .product-card:hover {
     transform: scale(1.05);
     box-shadow: 0 4px 8px rgba(255, 69, 0, 0.5);
 }
+
 .product-card h3 {
     color: #ffcc00;
     margin: 0 0 10px;
     text-align: center;
     font-size: 1.2em;
 }
+
 .product-card h3 a {
     color: #ffcc00;
     text-decoration: none;
 }
+
 .product-card h3 a:hover {
     text-decoration: underline;
 }
+
 .product-card img {
     max-width: 100%;
     height: auto;
 }
+
 .product-card button {
     background-color: #ff4500;
     color: white;
@@ -78,9 +90,11 @@ main {
     display: block;
     margin: 0 auto;
 }
+
 .product-card button:hover {
     background-color: #e03a00;
 }
+
 #checkout {
     margin-top: 20px;
     background-color: #222;
@@ -88,10 +102,12 @@ main {
     border-radius: 8px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
+
 #checkout h2 {
     color: #ffcc00;
     margin-top: 0;
 }
+
 #checkoutButton, #checkoutForm button {
     background-color: #ff4500;
     color: white;
@@ -100,9 +116,11 @@ main {
     cursor: pointer;
     border-radius: 4px;
 }
+
 #checkoutButton:hover, #checkoutForm button:hover {
     background-color: #e03a00;
 }
+
 .product-carousel {
     position: relative;
     width: 100%;
@@ -115,53 +133,62 @@ main {
     padding: 0;
     box-sizing: border-box;
 }
+
 .carousel-main {
     width: 100%;
-    min-height: 120px;
+    max-width: 960px; /* Support high-resolution images */
+    aspect-ratio: 1 / 1; /* Maintain square aspect ratio */
     overflow: hidden;
     text-align: center;
     padding: 0;
 }
+
 .main-image {
     width: 100%;
-    height: 100%;
-    object-fit: contain;
+    height: auto;
+    max-height: 960px; /* Cap for performance */
+    object-fit: contain; /* Prevent stretching */
     display: block;
     margin: 0 auto;
-    max-width: 220px;
 }
+
 .carousel-thumbnails {
     width: 100%;
     display: flex;
     flex-direction: row;
     overflow-x: auto;
     padding: 0;
-    min-height: 50px;
+    min-height: 100px; /* Larger thumbnails */
     justify-content: center;
     margin-top: 5px;
 }
+
 .thumbnail {
-    flex: 0 0 70px;
-    height: 50px;
+    flex: 0 0 100px; /* Larger thumbnails */
+    height: 100px;
     margin-right: 2px;
     overflow: hidden;
     text-align: center;
 }
+
 .thumbnail img {
     width: 100%;
     height: 100%;
-    object-fit: cover;
+    object-fit: contain; /* Prevent distortion */
     display: block;
     margin: 0 auto;
     cursor: pointer;
 }
+
 .carousel-thumbnails::-webkit-scrollbar {
     display: none;
 }
+
 .carousel-thumbnails {
     -ms-overflow-style: none;
     scrollbar-width: none;
 }
+
 #searchFilter {
     background-color: #222;
     padding: 15px;
@@ -171,17 +198,20 @@ main {
     max-width: 1200px;
     text-align: center;
 }
+
 #searchFilter h2 {
     color: #ffcc00;
     margin-top: 0;
     font-size: 1.8em;
 }
+
 #searchForm {
     display: flex;
     gap: 10px;
     justify-content: center;
     align-items: center;
 }
+
 #searchForm select, #searchForm input[type="text"] {
     padding: 8px 12px;
     border-radius: 4px;
@@ -191,6 +221,7 @@ main {
     background-color: #444;
     width: 200px;
 }
+
 #searchForm button {
     padding: 8px 12px;
     border-radius: 4px;
@@ -200,15 +231,19 @@ main {
     background-color: #ff4500;
     cursor: pointer;
 }
+
 #searchForm button:hover {
     background-color: #e03a00;
 }
+
 #searchForm button#resetSearch {
     background-color: #666;
 }
+
 #searchForm button#resetSearch:hover {
     background-color: #555;
 }
+
 #categoryNav {
     background-color: #222;
     padding: 10px;
@@ -217,6 +252,7 @@ main {
     text-align: center;
     max-width: 1200px;
 }
+
 .category-btn {
     background-color: #ff4500;
     color: white;
@@ -226,12 +262,15 @@ main {
     border-radius: 4px;
     cursor: pointer;
 }
+
 .category-btn:hover {
     background-color: #e03a00;
 }
+
 .category-btn.active {
     background-color: #ff9900;
 }
+
 footer {
     background-color: #222;
     color: #fff;
@@ -241,18 +280,22 @@ footer {
     border-top: 2px solid #ffcc00;
     box-shadow: 0 -2px 4px rgba(0, 0, 0, 0.3);
 }
+
 footer p {
     margin: 5px 0;
     font-size: 1em;
 }
+
 footer a {
     color: #ffcc00;
     text-decoration: none;
 }
+
 footer a:hover {
     text-decoration: underline;
     color: #e6b800;
 }
+
 #cartIcon {
     position: fixed;
     bottom: 20px;
@@ -271,9 +314,11 @@ footer a:hover {
     align-items: center;
     justify-content: center;
 }
+
 #cartIcon:hover {
     background-color: #e03a00;
 }
+
 .cart-panel {
     position: fixed;
     top: 0;
@@ -290,26 +335,32 @@ footer a:hover {
     visibility: hidden;
     box-sizing: border-box;
 }
+
 .cart-panel.active {
     right: 0;
     visibility: visible;
 }
+
 #cartPanel h2 {
     color: #ffcc00;
     margin-top: 0;
 }
+
 #cartPanel ul {
     list-style: none;
     padding: 0;
 }
+
 #cartPanel #cartTotal {
     font-weight: bold;
     color: #ff4500;
 }
+
 #cartPanel #cartPaypalButton {
     margin: 10px 0;
     display: block !important;
 }
+
 #closeCart {
     position: absolute;
     top: 10px;
@@ -326,23 +377,29 @@ footer a:hover {
     align-items: center;
     justify-content: center;
 }
+
 #closeCart:hover {
     background-color: #e03a00;
 }
+
 .terms-conditions {
     margin: 10px 0;
     text-align: center;
 }
+
 .terms-conditions label {
     color: #e0e0e0;
 }
+
 .terms-conditions a {
     color: #ffcc00;
     text-decoration: none;
 }
+
 .terms-conditions a:hover {
     text-decoration: underline;
 }
+
 @media (max-width: 600px) {
     #productGrid {
         grid-template-columns: 1fr;
@@ -358,6 +415,16 @@ footer a:hover {
     #searchForm select, #searchForm input[type="text"], #searchForm button {
         width: 100%;
         max-width: 300px;
+    }
+    .carousel-main {
+        max-width: 300px; /* Adjust for mobile */
+    }
+    .main-image {
+        max-height: 300px; /* Smaller for mobile */
+    }
+    .thumbnail {
+        flex: 0 0 80px; /* Slightly smaller thumbnails */
+        height: 80px;
     }
     footer {
         padding: 15px;
