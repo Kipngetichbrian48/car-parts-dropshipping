@@ -94,6 +94,15 @@ app.get('/product/:id', (req, res) => {
     }
 });
 
+app.get('/terms', (req, res) => {
+    try {
+        res.render('terms');
+    } catch (error) {
+        console.error('Error in terms route:', error.stack);
+        res.status(500).render('error', { message: 'Internal Server Error - Unable to load Terms and Conditions.' });
+    }
+});
+
 app.listen(port, () => {
     console.log(`Server running at http://localhost:${port}`);
 });
