@@ -15,20 +15,30 @@
     <main>
         <section>
             <h2><%= product.title %></h2>
-            <div class="product-carousel">
+            <div class="product-carousel" data-product-id="<%= product.id %>">
                 <div class="carousel-main">
-                    <img src="<%= product.image %>" alt="<%= product.title %> - Main Image" class="main-image" onerror="this.src='https://via.placeholder.com/150';">
+                    <img src="<%= product.images && product.images.length > 0 ? product.images[0] : 'https://via.placeholder.com/150' %>" 
+                         alt="<%= product.title %> - Main Image" 
+                         class="main-image" 
+                         onerror="handleImageError('<%= product.id %>', 'main', this.src); this.src='https://via.placeholder.com/150';">
                 </div>
                 <div class="carousel-thumbnails">
-                    <% product.additionalImages.forEach((img, index) => { %>
+                    <% (product.images || []).slice(1).forEach((img, index) => { %>
                         <div class="carousel-slide thumbnail">
-                            <img src="<%= img %>" alt="<%= product.title %> - Thumbnail <%= index + 1 %>" onerror="this.src='https://via.placeholder.com/60';">
+                            <img src="<%= img || 'https://via.placeholder.com/60' %>" 
+                                 alt="<%= product.title %> - Thumbnail <%= index + 1 %>" 
+                                 onerror="handleImageError('<%= product.id %>', 'thumbnail <%= index + 1 %>', this.src); this.src='https://via.placeholder.com/60';">
                         </div>
                     <% }); %>
                 </div>
             </div>
             <p>Price: $<%= product.price.toFixed(2) %></p>
-            <button class="add-to-cart" data-product-id="<%= product.id %>">Add to Cart</button>
+            <div class="terms-conditions">
+                <label>
+                    <input type="checkbox" id="termsCheckbox" required> I agree to the <a href="/terms">Terms and Conditions</a>
+                </label>
+            </div>
+            <button class="add-to-cart" data-product-id="<%= product.id %>" disabled>Add to Cart</button>
         </section>
     </main>
     <footer>
@@ -38,5 +48,18 @@
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <script src="https://www.sandbox.paypal.com/sdk/js?client-id=<%= clientId %>&currency=USD" async></script>
     <script src="/js/script.js" type="module"></script>
+    <script>
+        // Helper function to handle image errors
+        function handleImageError(productId, type, src) {
+            console.error(`Failed to load ${type} image for product ${productId}: ${src || 'none'}`);
+        }
+
+        // Enable "Add to Cart" button only when Terms and Conditions are checked
+        const termsCheckbox = document.getElementById('termsCheckbox');
+        const addToCartButton = document.querySelector('.add-to-cart');
+        termsCheckbox.addEventListener('change', () => {
+            addToCartButton.disabled = !termsCheckbox.checked;
+        });
+    </script>
 </body>
 </html>

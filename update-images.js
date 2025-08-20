@@ -9,47 +9,24 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const productsPath = join(__dirname, 'public', 'data', 'products.json');
 const backupPath = join(__dirname, 'public', 'data', 'products-backup.json');
 
-// Function to check if a URL is likely an AliExpress image URL
-const isAliExpressUrl = (url) => {
+// Number of additional images to add per product
+const additionalImages = 2; // Change to 1 if only adding one extra image
+
+// Placeholder URL for new images (to be manually replaced)
+const placeholderUrl = 'https://via.placeholder.com/960x960';
+
+// Function to check if a URL is valid
+const isValidUrl = (url) => {
     try {
-        return url.includes('aliexpress-media.com') && url.match(/\.(jpg|jpeg|png|avif|webp)$/i);
+        new URL(url);
+        return url.match(/\.(jpg|jpeg|png|avif|webp)$/i);
     } catch {
         return false;
     }
 };
 
-// Function to convert low-resolution URL to high-resolution
-const toHighResUrl = (url) => {
-    // Handle various low-res suffixes and formats
-    const patterns = [
-        /_(\d+x\d+)(q\d+)?\.jpg_\.avif/,
-        /_(\d+x\d+)(q\d+)?\.jpg/,
-        /_(\d+x\d+)(q\d+)?\.webp/,
-        /\.jpg_\.avif/,
-        /\.jpg/,
-        /\.webp/,
-        /\.avif/
-    ];
-
-    // Try replacing with 960x960.jpg
-    let highResUrl = url;
-    for (const pattern of patterns) {
-        if (url.match(pattern)) {
-            highResUrl = url.replace(pattern, '_960x960.jpg');
-            break;
-        }
-    }
-
-    // If no pattern matched, append _960x960.jpg before the extension
-    if (highResUrl === url && isAliExpressUrl(url)) {
-        highResUrl = url.replace(/\.(jpg|jpeg|png|avif|webp)$/, '_960x960.$1');
-    }
-
-    return highResUrl;
-};
-
-// Main function to update products.json
-async function updateImageUrls() {
+// Main function to add images
+async function addImagesToProducts() {
     try {
         // Backup original file
         if (await readFile(productsPath).catch(() => false)) {
@@ -68,41 +45,33 @@ async function updateImageUrls() {
             console.warn(`Expected 90 products, found ${products.length}`);
         }
 
-        // Update image URLs
+        // Add images to each product
         const updatedProducts = products.map((product, index) => {
             if (!product.images || !Array.isArray(product.images) || product.images.length !== 3) {
                 console.warn(`Product ${product.id || index}: Invalid images array`, product.images);
                 return {
                     ...product,
                     images: product.images && Array.isArray(product.images)
-                        ? product.images.map(img => (isAliExpressUrl(img) ? toHighResUrl(img) : img))
-                        : ['https://via.placeholder.com/150', 'https://via.placeholder.com/60', 'https://via.placeholder.com/60']
+                        ? [...product.images, ...Array(additionalImages).fill(placeholderUrl)]
+                        : Array(3 + additionalImages).fill(placeholderUrl)
                 };
             }
 
-            const updatedImages = product.images.map((img, imgIndex) => {
-                if (isAliExpressUrl(img)) {
-                    const highResUrl = toHighResUrl(img);
-                    console.log(`Product ${product.id || index}, Image ${imgIndex + 1}: ${img} -> ${highResUrl}`);
-                    return highResUrl;
-                }
-                console.warn(`Product ${product.id || index}, Image ${imgIndex + 1}: Non-AliExpress URL, unchanged: ${img}`);
-                return img;
-            });
-
-            return { ...product, images: updatedImages };
+            const newImages = [...product.images, ...Array(additionalImages).fill(placeholderUrl)];
+            console.log(`Product ${product.id || index}: Added ${additionalImages} images. New images:`, newImages);
+            return { ...product, images: newImages };
         });
 
         // Write updated products.json
         await writeFile(productsPath, JSON.stringify(updatedProducts, null, 2));
-        console.log('Updated products.json with high-resolution image URLs');
+        console.log(`Updated products.json with ${additionalImages} additional images per product`);
 
-        // Log sample URLs for manual verification
+        // Log sample products for verification
         console.log('Sample updated products for verification:');
         updatedProducts.slice(0, 5).forEach(product => {
             console.log(`Product ${product.id}:`, product.images);
         });
-        console.log('Please verify 5–10 URLs in a browser to ensure they load high-resolution images.');
+        console.log('Please replace placeholder URLs (https://via.placeholder.com/960x960) with high-resolution AliExpress URLs.');
 
     } catch (error) {
         console.error('Error updating products.json:', error.message);
@@ -111,4 +80,4 @@ async function updateImageUrls() {
 }
 
 // Run the script
-updateImageUrls();
+addImagesToProducts();
