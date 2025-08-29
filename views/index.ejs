@@ -35,15 +35,6 @@
       </form>
     </section>
     <section id="productGrid" class="product-grid"></section>
-    <section id="checkout" style="display:none;">
-      <h2>Finalize Your Upgrade</h2>
-      <form id="checkoutForm">
-        <input type="text" id="name" placeholder="Name" required><br>
-        <input type="tel" id="phone" placeholder="Phone" required><br>
-        <input type="text" id="address" placeholder="Address" required><br>
-        <button type="button" id="ignitePurchase">Ignite Your Purchase!</button>
-      </form>
-    </section>
   </main>
   <footer>
     <p>Shipping: 2–6 weeks via trusted partners.</p>
@@ -57,13 +48,29 @@
     <h2>Your Cart</h2>
     <ul id="cartItems"></ul>
     <p>Total: $<span id="cartTotal">0.00</span></p>
-    <div class="terms-conditions">
-      <label>
-        <input type="checkbox" id="termsCheckbox" required>
-        I agree to the <a href="/terms" target="_blank">Terms and Conditions</a>
-      </label>
-    </div>
+    <form id="checkoutForm">
+      <input type="text" id="name" placeholder="Name" required><br>
+      <input type="tel" id="phone" placeholder="Phone" required><br>
+      <input type="text" id="address" placeholder="Address" required><br>
+      <select id="paymentMethod" required>
+        <option value="paypal">PayPal</option>
+        <option value="cod">Cash on Delivery</option>
+        <!-- <option value="mpesa">M-Pesa</option> -->
+      </select><br>
+      <div class="terms-conditions">
+        <label>
+          <input type="checkbox" id="termsCheckbox" required> I agree to the <a href="/terms" target="_blank">Terms and Conditions</a>
+        </label>
+      </div>
+      <button type="submit" id="ignitePurchase">Ignite Your Purchase!</button>
+    </form>
     <div id="cartPaypalButton"></div>
+    <h2>Track Your Order</h2>
+    <form id="trackOrderForm">
+      <input type="text" id="trackOrderId" placeholder="Enter Order ID (e.g., 23768e95-00fb-410f-a985-32674eceb242)" required>
+      <button type="submit">Track Order</button>
+    </form>
+    <div id="trackResult"></div>
   </div>
   <script type="application/json" id="products-data">
     <%- JSON.stringify(products) %>

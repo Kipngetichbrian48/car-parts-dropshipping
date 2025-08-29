@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Track Order | Braviem</title>
+  <link rel="icon" type="image/x-icon" href="/favicon.ico">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/site.webmanifest">
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <header>
+    <h1>Braviem</h1>
+    <p>Track Your Order</p>
+  </header>
+  <main>
+    <section class="track-order-section">
+      <h2>Track Your Order</h2>
+      <form id="trackOrderForm">
+        <input type="text" id="trackOrderId" placeholder="Enter Order ID (e.g., 23768e95-00fb-410f-a985-32674eceb242)" required>
+        <button type="submit">Track Order</button>
+      </form>
+      <div id="trackResult"></div>
+    </section>
+  </main>
+  <footer>
+    <p>Braviem &copy; 2025. Licensed under the <a href="/license">MIT License</a>.</p>
+  </footer>
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+  <script src="/js/script.js"></script>
+</body>
+</html>

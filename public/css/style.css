@@ -1,3 +1,4 @@
+/* public/css/style.css */
 body {
     font-family: 'Arial', sans-serif;
     margin: 0;
@@ -95,29 +96,33 @@ main {
     background-color: #e03a00;
 }
 
-#checkout {
-    margin-top: 20px;
-    background-color: #222;
-    padding: 15px;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+#checkoutForm select,
+#checkoutForm input[type="text"],
+#checkoutForm input[type="tel"],
+#trackOrderForm input[type="text"] {
+    padding: 8px 12px;
+    border-radius: 4px;
+    border: none;
+    font-size: 1em;
+    color: white;
+    background-color: #444;
+    width: 100%;
+    margin-bottom: 10px;
 }
 
-#checkout h2 {
-    color: #ffcc00;
-    margin-top: 0;
-}
-
-#checkoutButton, #checkoutForm button {
+#ignitePurchase,
+#trackOrderForm button {
     background-color: #ff4500;
     color: white;
     border: none;
     padding: 10px 20px;
     cursor: pointer;
     border-radius: 4px;
+    width: 100%;
 }
 
-#checkoutButton:hover, #checkoutForm button:hover {
+#ignitePurchase:hover,
+#trackOrderForm button:hover {
     background-color: #e03a00;
 }
 
@@ -158,14 +163,14 @@ main {
     flex-direction: row;
     overflow-x: auto;
     padding: 0;
-    min-height: 120px; /* Increased for more thumbnails */
+    min-height: 120px;
     justify-content: center;
     margin-top: 5px;
-    gap: 5px; /* Better spacing */
+    gap: 5px;
 }
 
 .thumbnail {
-    flex: 0 0 80px; /* Smaller to fit more thumbnails */
+    flex: 0 0 80px;
     height: 80px;
     overflow: hidden;
     text-align: center;
@@ -189,70 +194,60 @@ main {
     scrollbar-width: none;
 }
 
-/* public/css/style.css (search section only) */
 #searchFilter {
-  background-color: #222;
-  padding: 15px;
-  margin: 20px auto;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-  max-width: 1200px;
-  text-align: center;
+    background-color: #222;
+    padding: 15px;
+    margin: 20px auto;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    max-width: 1200px;
+    text-align: center;
 }
 
 #searchFilter h2 {
-  color: #ffcc00;
-  margin-top: 0;
-  font-size: 1.8em;
+    color: #ffcc00;
+    margin-top: 0;
+    font-size: 1.8em;
 }
 
 #searchForm {
-  display: flex;
-  gap: 10px;
-  justify-content: center;
-  align-items: center;
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    align-items: center;
 }
 
-#searchForm select, #searchForm input[type="text"] {
-  padding: 8px 12px;
-  border-radius: 4px;
-  border: none;
-  font-size: 1em;
-  color: white;
-  background-color: #444;
-  width: 200px;
+#searchForm select,
+#searchForm input[type="text"] {
+    padding: 8px 12px;
+    border-radius: 4px;
+    border: none;
+    font-size: 1em;
+    color: white;
+    background-color: #444;
+    width: 200px;
 }
 
 #searchForm button {
-  padding: 8px 12px;
-  border-radius: 4px;
-  border: none;
-  font-size: 1em;
-  color: white;
-  background-color: #ff4500;
-  cursor: pointer;
+    padding: 8px 12px;
+    border-radius: 4px;
+    border: none;
+    font-size: 1em;
+    color: white;
+    background-color: #ff4500;
+    cursor: pointer;
 }
 
 #searchForm button:hover {
-  background-color: #e03a00;
+    background-color: #e03a00;
 }
 
 #searchForm button#resetSearch {
-  background-color: #666;
+    background-color: #666;
 }
 
 #searchForm button#resetSearch:hover {
-  background-color: #555;
-}
-
-@media (max-width: 600px) {
-  #searchForm {
-    flex-direction: column;
-  }
-  #searchForm select, #searchForm input[type="text"], #searchForm button {
-    width: 100%;
-    max-width: 300px;
-  }
+    background-color: #555;
 }
 
 #categoryNav {
@@ -372,6 +367,11 @@ footer a:hover {
     display: block !important;
 }
 
+#cartPanel #trackResult {
+    margin-top: 10px;
+    color: #e0e0e0;
+}
+
 #closeCart {
     position: absolute;
     top: 10px;
@@ -411,6 +411,54 @@ footer a:hover {
     text-decoration: underline;
 }
 
+.rating-section {
+    margin-top: 20px;
+    text-align: center;
+}
+
+.rating-section select {
+    padding: 8px;
+    border-radius: 4px;
+    border: none;
+    background-color: #444;
+    color: white;
+}
+
+.rating-section textarea {
+    width: 100%;
+    padding: 8px;
+    border-radius: 4px;
+    border: none;
+    background-color: #444;
+    color: white;
+    margin-top: 10px;
+}
+
+.rating-section button {
+    background-color: #ff4500;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    cursor: pointer;
+    border-radius: 4px;
+    margin-top: 10px;
+}
+
+.rating-section button:hover {
+    background-color: #e03a00;
+}
+
+.ratings-list {
+    margin-top: 20px;
+}
+
+.ratings-list div {
+    background-color: #333;
+    padding: 10px;
+    margin-bottom: 10px;
+    border-radius: 4px;
+}
+
 @media (max-width: 600px) {
     #productGrid {
         grid-template-columns: 1fr;
@@ -423,7 +471,9 @@ footer a:hover {
     #searchForm {
         flex-direction: column;
     }
-    #searchForm select, #searchForm input[type="text"], #searchForm button {
+    #searchForm select,
+    #searchForm input[type="text"],
+    #searchForm button {
         width: 100%;
         max-width: 300px;
     }
@@ -434,10 +484,10 @@ footer a:hover {
         max-height: 300px;
     }
     .carousel-thumbnails {
-        min-height: 100px; /* Adjusted for mobile */
+        min-height: 100px;
     }
     .thumbnail {
-        flex: 0 0 60px; /* Smaller for mobile */
+        flex: 0 0 60px;
         height: 60px;
     }
     footer {

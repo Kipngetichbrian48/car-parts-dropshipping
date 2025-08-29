@@ -17,6 +17,6 @@ dist/
 # Databases
 *.sqlite
 
-# Ignore all JSON files except specific ones
+# JSON files
 *.json
 !public/data/products.json

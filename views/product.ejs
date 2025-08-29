@@ -25,14 +25,14 @@
           <img src="<%= product.images && product.images.length > 0 ? product.images[0] : 'https://via.placeholder.com/150' %>" 
                alt="<%= product.title %> - Main Image" 
                class="main-image" 
-               onerror="handleImageError('<%= product.id %>', 'main', this.src); this.src='https://via.placeholder.com/150';">
+               onerror="this.src='https://via.placeholder.com/150';">
         </div>
         <div class="carousel-thumbnails">
           <% (product.images || []).slice(1).forEach((img, index) => { %>
             <div class="carousel-slide thumbnail">
               <img src="<%= img || 'https://via.placeholder.com/60' %>" 
                    alt="<%= product.title %> - Thumbnail <%= index + 1 %>" 
-                   onerror="handleImageError('<%= product.id %>', 'thumbnail <%= index + 1 %>', this.src); this.src='https://via.placeholder.com/60';">
+                   onerror="this.src='https://via.placeholder.com/60';">
             </div>
           <% }); %>
         </div>
@@ -44,6 +44,30 @@
         </label>
       </div>
       <button class="add-to-cart" data-product-id="<%= product.id %>" disabled>Add to Cart</button>
+      <div class="rating-section">
+        <h3>Rate this Product</h3>
+        <form id="ratingForm">
+          <select id="ratingValue" required>
+            <option value="">Select Rating</option>
+            <option value="1">1 Star</option>
+            <option value="2">2 Stars</option>
+            <option value="3">3 Stars</option>
+            <option value="4">4 Stars</option>
+            <option value="5">5 Stars</option>
+          </select>
+          <textarea id="ratingComment" placeholder="Your comment (optional)"></textarea>
+          <button type="submit">Submit Rating</button>
+        </form>
+        <div class="ratings-list">
+          <% (ratings || []).forEach(rating => { %>
+            <div>
+              <p>Rating: <%= rating.rating %> Stars</p>
+              <p>Comment: <%= rating.comment || 'No comment' %></p>
+              <p>Date: <%= new Date(rating.timestamp).toLocaleString() %></p>
+            </div>
+          <% }); %>
+        </div>
+      </div>
     </section>
   </main>
   <footer>
@@ -51,19 +75,38 @@
     <p>Licensed under the <a href="/license">MIT License</a>.</p>
   </footer>
   <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-  <script src="https://www.sandbox.paypal.com/sdk/js?client-id=<%= clientId %>&currency=USD" async></script>
-  <script src="/js/script.js" type="module"></script>
+  <script src="/js/products.js"></script>
+  <script src="/js/script.js"></script>
   <script>
-    // Helper function to handle image errors
-    function handleImageError(productId, type, src) {
-      console.error(`Failed to load ${type} image for product ${productId}: ${src || 'none'}`);
-    }
-
-    // Enable "Add to Cart" button only when Terms and Conditions are checked
+    // Enable "Add to Cart" button when terms are checked
     const termsCheckbox = document.getElementById('termsCheckbox');
     const addToCartButton = document.querySelector('.add-to-cart');
     termsCheckbox.addEventListener('change', () => {
       addToCartButton.disabled = !termsCheckbox.checked;
+    });
+
+    // Handle rating submission
+    const ratingForm = document.getElementById('ratingForm');
+    ratingForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const ratingValue = document.getElementById('ratingValue').value;
+      const ratingComment = document.getElementById('ratingComment').value;
+      try {
+        const response = await axios.post('/submit-rating', {
+          productId: '<%= product.id %>',
+          rating: ratingValue,
+          comment: ratingComment
+        });
+        if (response.data.success) {
+          alert('Rating submitted successfully!');
+          location.reload();
+        } else {
+          alert('Failed to submit rating: ' + response.data.error);
+        }
+      } catch (error) {
+        console.error('Error submitting rating:', error);
+        alert('Failed to submit rating.');
+      }
     });
   </script>
 </body>
