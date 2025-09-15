@@ -1,3 +1,4 @@
+<!-- views/product.ejs -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -38,6 +39,8 @@
         </div>
       </div>
       <p>Price: $<%= product.price.toFixed(2) %></p>
+      <p>SKU: <%= product.sku %></p>
+      <p>Category: <%= product.category %></p>
       <div class="terms-conditions">
         <label>
           <input type="checkbox" id="termsCheckbox" required> I agree to the <a href="/terms">Terms and Conditions</a>
@@ -56,16 +59,25 @@
             <option value="5">5 Stars</option>
           </select>
           <textarea id="ratingComment" placeholder="Your comment (optional)"></textarea>
-          <button type="submit">Submit Rating</button>
+          <button type="submit" id="submitRating">Submit Rating</button>
+          <p id="ratingStatus" style="display: none;"></p>
         </form>
         <div class="ratings-list">
-          <% (ratings || []).forEach(rating => { %>
-            <div>
-              <p>Rating: <%= rating.rating %> Stars</p>
-              <p>Comment: <%= rating.comment || 'No comment' %></p>
-              <p>Date: <%= new Date(rating.timestamp).toLocaleString() %></p>
-            </div>
-          <% }); %>
+          <% if (ratings && ratings.length > 0) { %>
+            <% ratings.forEach(rating => { %>
+              <div class="rating">
+                <p>Rating: 
+                  <% for (let i = 0; i < 5; i++) { %>
+                    <span class="star <%= i < rating.rating ? 'filled' : '' %>">★</span>
+                  <% } %>
+                </p>
+                <p>Comment: <%= rating.comment || 'No comment' %></p>
+                <p>Date: <%= new Date(rating.timestamp).toLocaleString() %></p>
+              </div>
+            <% }); %>
+          <% } else { %>
+            <p>No ratings yet. Be the first to rate this product!</p>
+          <% } %>
         </div>
       </div>
     </section>
@@ -78,35 +90,58 @@
   <script src="/js/products.js"></script>
   <script src="/js/script.js"></script>
   <script>
-    // Enable "Add to Cart" button when terms are checked
-    const termsCheckbox = document.getElementById('termsCheckbox');
-    const addToCartButton = document.querySelector('.add-to-cart');
-    termsCheckbox.addEventListener('change', () => {
-      addToCartButton.disabled = !termsCheckbox.checked;
-    });
+    document.addEventListener('DOMContentLoaded', () => {
+      // Enable "Add to Cart" button when terms are checked
+      const termsCheckbox = document.getElementById('termsCheckbox');
+      const addToCartButton = document.querySelector('.add-to-cart');
+      termsCheckbox.addEventListener('change', () => {
+        addToCartButton.disabled = !termsCheckbox.checked;
+      });
 
-    // Handle rating submission
-    const ratingForm = document.getElementById('ratingForm');
-    ratingForm.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const ratingValue = document.getElementById('ratingValue').value;
-      const ratingComment = document.getElementById('ratingComment').value;
-      try {
-        const response = await axios.post('/submit-rating', {
-          productId: '<%= product.id %>',
-          rating: ratingValue,
-          comment: ratingComment
-        });
-        if (response.data.success) {
-          alert('Rating submitted successfully!');
-          location.reload();
-        } else {
-          alert('Failed to submit rating: ' + response.data.error);
+      // Handle "Add to Cart" click
+      addToCartButton.addEventListener('click', () => {
+        if (!addToCartButton.disabled) {
+          window.addToCart('<%= product.id %>');
         }
-      } catch (error) {
-        console.error('Error submitting rating:', error);
-        alert('Failed to submit rating.');
-      }
+      });
+
+      // Handle thumbnail clicks
+      document.querySelectorAll('.carousel-thumbnails .thumbnail img').forEach(thumb => {
+        thumb.addEventListener('click', (e) => {
+          const mainImage = document.querySelector('.carousel-main img');
+          mainImage.src = e.target.src;
+          mainImage.alt = e.target.alt;
+        });
+      });
+
+      // Handle rating submission
+      const ratingForm = document.getElementById('ratingForm');
+      const ratingStatus = document.getElementById('ratingStatus');
+      ratingForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        ratingStatus.style.display = 'block';
+        ratingStatus.textContent = 'Submitting rating...';
+        const ratingValue = document.getElementById('ratingValue').value;
+        const ratingComment = document.getElementById('ratingComment').value;
+        try {
+          const response = await axios.post('/submit-rating', {
+            productId: '<%= product.id %>',
+            rating: ratingValue,
+            comment: ratingComment
+          });
+          if (response.data.success) {
+            ratingStatus.textContent = 'Rating submitted successfully!';
+            setTimeout(() => {
+              location.reload();
+            }, 1000);
+          } else {
+            ratingStatus.textContent = 'Failed to submit rating: ' + response.data.error;
+          }
+        } catch (error) {
+          console.error('Error submitting rating:', error.message);
+          ratingStatus.textContent = 'Failed to submit rating. Please try again.';
+        }
+      });
     });
   </script>
 </body>

@@ -19,12 +19,14 @@ document.addEventListener('DOMContentLoaded', () => {
       };
       currency = currencyMap[countryCode] || 'USD';
       if (currency !== 'USD') {
-        const rateResponse = await axios.get(`https://v6.exchangerate-api.com/v6/${process.env.EXCHANGE_RATE_API_KEY || '8595f204349a4fe26ad731b1'}/latest/USD`);
-        exchangeRate = rateResponse.data.conversion_rates[currency] || 1;
+        const rateResponse = await axios.get('/api/exchange-rate', { params: { currency } });
+        exchangeRate = rateResponse.data.rate || 1;
       }
       updateProductGrid(window.products);
     } catch (error) {
-      console.error('Error fetching location/currency:', error);
+      console.error('Error fetching location/currency:', error.message);
+      exchangeRate = 1; // Fallback to USD
+      updateProductGrid(window.products);
     }
   }
 
@@ -182,7 +184,6 @@ document.addEventListener('DOMContentLoaded', () => {
     localStorage.setItem('cart', JSON.stringify(window.cart));
   });
 
-  // Update cart total with currency conversion
   window.updateCartTotal = function() {
     const cartItems = document.getElementById('cartItems');
     if (!cartItems) return;
@@ -228,7 +229,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // Initialize PayPal Button
   window.initializePayPalButton = function() {
     if (window.paypal && !document.querySelector('#cartPaypalButton .paypal-buttons')) {
       document.getElementById('cartPaypalButton').innerHTML = '';
@@ -294,7 +294,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   };
 
-  // Handle checkout form submission
   if (checkoutForm) {
     checkoutForm.addEventListener('submit', async (e) => {
       e.preventDefault();
@@ -338,34 +337,34 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // Handle track order form submission
   if (trackOrderForm) {
     trackOrderForm.addEventListener('submit', async (e) => {
       e.preventDefault();
       let orderId = document.getElementById('trackOrderId').value.trim();
-      // Remove any "Order " prefix and validate UUID format
       orderId = orderId.replace(/^Order\s+/i, '');
       const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+      const trackResult = document.getElementById('trackResult');
       if (!uuidRegex.test(orderId)) {
-        document.getElementById('trackResult').innerHTML = '<p>Invalid Order ID format. Please enter a valid Order ID.</p>';
+        trackResult.innerHTML = '<p class="error">Invalid Order ID format. Please enter a valid Order ID.</p>';
         return;
       }
+      trackResult.innerHTML = '<p>Loading...</p>';
       try {
         const response = await axios.get(`/track-order/${orderId}`);
         if (response.data.success) {
           const order = response.data.order;
-          document.getElementById('trackResult').innerHTML = `
+          trackResult.innerHTML = `
             <p>Order ID: ${order.orderId}</p>
             <p>Status: ${order.status}</p>
             <p>Created: ${new Date(order.createdAt).toLocaleString()}</p>
             <p>Items: ${Object.values(order.cart).map(item => `${item.title} (x${item.quantity})`).join(', ')}</p>
           `;
         } else {
-          document.getElementById('trackResult').innerHTML = '<p>Order not found. Please check the Order ID.</p>';
+          trackResult.innerHTML = '<p class="error">Order not found. Please check the Order ID.</p>';
         }
       } catch (error) {
         console.error('Error tracking order:', error.message);
-        document.getElementById('trackResult').innerHTML = '<p>Error tracking order. Please try again later.</p>';
+        trackResult.innerHTML = '<p class="error">Error tracking order. Please try again later.</p>';
       }
     });
   }

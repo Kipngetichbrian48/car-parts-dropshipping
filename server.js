@@ -21,24 +21,32 @@ const {
 
 if (!PAYPAL_CLIENT_ID) console.warn('PAYPAL_CLIENT_ID not found in environment.');
 if (!EXCHANGE_RATE_API_KEY) console.warn('EXCHANGE_RATE_API_KEY not found in environment.');
-if (!MPESA_CONSUMER_KEY || !MPESA_CONSUMER_SECRET || !MPESA_SHORTCODE || !MPESA_PASSKEY) console.warn('M-Pesa keys not found.');
-if (!MONGODB_URI) console.error('MONGODB_URI not found in environment.');
+if (!MONGODB_URI) console.warn('MONGODB_URI not found in environment. Orders and ratings will be disabled.');
 
 const app = express();
 const port = 10000;
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
 // MongoDB setup
-let db;
+let db = null;
 async function connectToMongoDB() {
-  try {
-    const client = new MongoClient(MONGODB_URI);
-    await client.connect();
-    console.log('Connected to MongoDB');
-    db = client.db('braviem');
-  } catch (error) {
-    console.error('Failed to connect to MongoDB:', error);
-    process.exit(1);
+  let retries = 5;
+  while (retries > 0) {
+    try {
+      const client = new MongoClient(MONGODB_URI, { serverSelectionTimeoutMS: 5000 });
+      await client.connect();
+      console.log('Connected to MongoDB');
+      db = client.db('braviem');
+      return;
+    } catch (error) {
+      console.error(`MongoDB connection failed (attempt ${6 - retries}/5):`, error.message);
+      retries--;
+      if (retries === 0) {
+        console.warn('MongoDB connection failed after 5 attempts. Continuing without MongoDB.');
+        return;
+      }
+      await new Promise(resolve => setTimeout(resolve, 5000));
+    }
   }
 }
 connectToMongoDB();
@@ -47,6 +55,15 @@ app.set('view engine', 'ejs');
 app.set('views', join(__dirname, 'views'));
 app.use(express.static(join(__dirname, 'public')));
 app.use(express.json());
+
+// Content Security Policy
+app.use((req, res, next) => {
+  res.setHeader(
+    'Content-Security-Policy',
+    "default-src 'self'; script-src 'self' https://cdn.jsdelivr.net https://www.sandbox.paypal.com https://www.paypal.com 'unsafe-inline'; style-src 'self'; img-src 'self' https://via.placeholder.com https://*.aliexpress-media.com data:; connect-src 'self' https://ipapi.co https://v6.exchangerate-api.com https://www.sandbox.paypal.com https://www.paypal.com"
+  );
+  next();
+});
 
 // Load products from JSON file
 const productsPath = join(__dirname, 'public', 'data', 'products.json');
@@ -92,7 +109,7 @@ app.get('/product/:id', async (req, res) => {
     if (!product) {
       return res.status(404).render('error', { message: 'Product not found.' });
     }
-    const productRatings = await db.collection('ratings').find({ productId: req.params.id }).toArray();
+    const productRatings = db ? await db.collection('ratings').find({ productId: req.params.id }).toArray() : [];
     res.render('product', { product, ratings: productRatings });
   } catch (error) {
     console.error('Error in product route:', error.stack);
@@ -119,6 +136,7 @@ app.get('/track-order', (req, res) => {
 });
 
 app.post('/submit-rating', async (req, res) => {
+  if (!db) return res.status(503).json({ error: 'Database unavailable.' });
   try {
     const { productId, rating, comment } = req.body;
     if (!productId || !rating) {
@@ -138,6 +156,7 @@ app.post('/submit-rating', async (req, res) => {
 });
 
 app.post('/create-order', async (req, res) => {
+  if (!db) return res.status(503).json({ error: 'Database unavailable.' });
   try {
     const { name, phone, address, paymentMethod, cart } = req.body;
     const orderId = uuidv4();
@@ -165,7 +184,7 @@ app.post('/create-order', async (req, res) => {
       } else {
         res.status(400).json({ error: 'M-Pesa payment initiation failed.' });
       }
-    } else if (paymentMethod === 'cod') {
+    } else if (paymentMethod === 'cod' || paymentMethod === 'paypal') {
       await db.collection('orders').insertOne({
         orderId,
         name,
@@ -176,19 +195,7 @@ app.post('/create-order', async (req, res) => {
         status: 'Pending',
         createdAt: new Date().toISOString()
       });
-      res.json({ success: true, orderId, message: 'Order placed successfully with Cash on Delivery.' });
-    } else if (paymentMethod === 'paypal') {
-      await db.collection('orders').insertOne({
-        orderId,
-        name,
-        phone,
-        address,
-        cart,
-        paymentMethod,
-        status: 'Pending',
-        createdAt: new Date().toISOString()
-      });
-      res.json({ success: true, orderId, message: 'Order placed successfully with PayPal.' });
+      res.json({ success: true, orderId, message: `Order placed successfully with ${paymentMethod === 'paypal' ? 'PayPal' : 'Cash on Delivery'}.` });
     } else {
       res.status(400).json({ error: 'Invalid payment method.' });
     }
@@ -199,9 +206,9 @@ app.post('/create-order', async (req, res) => {
 });
 
 app.get('/track-order/:id', async (req, res) => {
+  if (!db) return res.status(503).json({ error: 'Database unavailable.' });
   try {
     const orderId = req.params.id;
-    // Validate UUID format
     const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
     if (!uuidRegex.test(orderId)) {
       return res.status(400).json({ error: 'Invalid Order ID format.' });
@@ -242,7 +249,7 @@ async function initiateMpesaPayment(orderId, phone, amount) {
       PartyA: phone,
       PartyB: MPESA_SHORTCODE,
       PhoneNumber: phone,
-      CallBackURL: 'https://your-vercel-app.vercel.app/mpesa-callback',
+      CallBackURL: 'https://braviem.vercel.app/mpesa-callback',
       AccountReference: orderId,
       TransactionDesc: 'Payment for car parts'
     },
@@ -255,14 +262,16 @@ async function initiateMpesaPayment(orderId, phone, amount) {
 app.post('/mpesa-callback', async (req, res) => {
   try {
     const { CheckoutRequestID, ResultCode, ResultDesc } = req.body.Body.stkCallback;
-    const order = await db.collection('orders').findOne({ mpesaRequestId: CheckoutRequestID });
-    if (order) {
-      const newStatus = ResultCode === '0' ? 'Confirmed' : 'Failed';
-      await db.collection('orders').updateOne(
-        { mpesaRequestId: CheckoutRequestID },
-        { $set: { status: newStatus, updatedAt: new Date().toISOString() } }
-      );
-      console.log(`M-Pesa callback: Order ${order.orderId} status updated to ${newStatus}`);
+    if (db) {
+      const order = await db.collection('orders').findOne({ mpesaRequestId: CheckoutRequestID });
+      if (order) {
+        const newStatus = ResultCode === '0' ? 'Confirmed' : 'Failed';
+        await db.collection('orders').updateOne(
+          { mpesaRequestId: CheckoutRequestID },
+          { $set: { status: newStatus, updatedAt: new Date().toISOString() } }
+        );
+        console.log(`M-Pesa callback: Order ${order.orderId} status updated to ${newStatus}`);
+      }
     }
     res.json({ success: true });
   } catch (error) {
@@ -271,6 +280,29 @@ app.post('/mpesa-callback', async (req, res) => {
   }
 });
 
-app.listen(port, () => {
+// Exchange Rate Endpoint
+app.get('/api/exchange-rate', async (req, res) => {
+  try {
+    const currency = req.query.currency || 'USD';
+    if (currency === 'USD') {
+      return res.json({ rate: 1 });
+    }
+    if (!EXCHANGE_RATE_API_KEY) {
+      return res.status(500).json({ error: 'Exchange rate API key missing.' });
+    }
+    const response = await axios.get(`https://v6.exchangerate-api.com/v6/${EXCHANGE_RATE_API_KEY}/latest/USD`);
+    const rate = response.data.conversion_rates[currency] || 1;
+    res.json({ rate });
+  } catch (error) {
+    console.error('Error fetching exchange rate:', error.message);
+    res.status(500).json({ error: 'Failed to fetch exchange rate.' });
+  }
+});
+
+app.listen(port, (err) => {
+  if (err) {
+    console.error('Server failed to start:', err.message);
+    process.exit(1);
+  }
   console.log(`Server running at http://localhost:${port}`);
 });
