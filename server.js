@@ -11,7 +11,7 @@ import { MongoClient } from 'mongodb';
 dotenv.config();
 const {
   PAYPAL_CLIENT_ID,
-  PAYPAL_CLIENT_SECRET,          // <-- added for PayPal
+  PAYPAL_CLIENT_SECRET,
   EXCHANGE_RATE_API_KEY,
   MPESA_CONSUMER_KEY,
   MPESA_CONSUMER_SECRET,
@@ -43,6 +43,7 @@ async function connectToMongoDB() {
   let retries = 5;
   while (retries > 0) {
     try {
+      console.log(`MongoDB connection attempt ${6 - retries}/5`);
       const client = new MongoClient(MONGODB_URI, { serverSelectionTimeoutMS: 5000 });
       await client.connect();
       console.log('Connected to MongoDB');
@@ -231,6 +232,7 @@ app.post('/create-order', async (req, res) => {
     console.error('=== /create-order ERROR ===');
     console.error('Message :', error.message);
     console.error('Stack   :', error.stack);
+    console.error('Payment Method:', req.body.paymentMethod);
     console.error('============================');
     res.status(500).json({ error: 'Internal Server Error.' });
   }
