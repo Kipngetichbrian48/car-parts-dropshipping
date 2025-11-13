@@ -11,6 +11,7 @@ import { MongoClient } from 'mongodb';
 dotenv.config();
 const {
   PAYPAL_CLIENT_ID,
+  PAYPAL_CLIENT_SECRET,          // <-- added for PayPal
   EXCHANGE_RATE_API_KEY,
   MPESA_CONSUMER_KEY,
   MPESA_CONSUMER_SECRET,
@@ -19,9 +20,18 @@ const {
   MONGODB_URI
 } = process.env;
 
+/* ---------- STARTUP DIAGNOSTICS ---------- */
+console.log('=== ENV CHECK ===');
+console.log('PAYPAL_CLIENT_ID      :', !!PAYPAL_CLIENT_ID ? 'present' : 'MISSING');
+console.log('PAYPAL_CLIENT_SECRET :', !!PAYPAL_CLIENT_SECRET ? 'present' : 'MISSING');
+console.log('MONGODB_URI           :', !!MONGODB_URI ? 'present' : 'MISSING');
+console.log('==================');
+
 if (!PAYPAL_CLIENT_ID) console.warn('PAYPAL_CLIENT_ID not found in environment.');
+if (!PAYPAL_CLIENT_SECRET) console.warn('PAYPAL_CLIENT_SECRET not found in environment.');
 if (!EXCHANGE_RATE_API_KEY) console.warn('EXCHANGE_RATE_API_KEY not found in environment.');
 if (!MONGODB_URI) console.warn('MONGODB_URI not found in environment. Orders and ratings will be disabled.');
+/* ---------- END STARTUP DIAGNOSTICS ---------- */
 
 const app = express();
 const port = 10000;
@@ -155,8 +165,21 @@ app.post('/submit-rating', async (req, res) => {
   }
 });
 
+/* ---------- /create-order WITH DIAGNOSTIC LOGGING ---------- */
 app.post('/create-order', async (req, res) => {
-  if (!db) return res.status(503).json({ error: 'Database unavailable.' });
+  console.log('=== /create-order INVOKED ===');
+  console.log('paymentMethod :', req.body.paymentMethod);
+  console.log('cart items    :', req.body.cart ? Object.keys(req.body.cart).length : 0);
+  console.log('db available  :', !!db);
+  console.log('PAYPAL_CLIENT_ID      :', !!PAYPAL_CLIENT_ID ? 'present' : 'MISSING');
+  console.log('PAYPAL_CLIENT_SECRET :', !!PAYPAL_CLIENT_SECRET ? 'present' : 'MISSING');
+  console.log('MONGODB_URI           :', !!MONGODB_URI ? 'present' : 'MISSING');
+
+  if (!db) {
+    console.warn('Database not connected – returning 503');
+    return res.status(503).json({ error: 'Database unavailable.' });
+  }
+
   try {
     const { name, phone, address, paymentMethod, cart } = req.body;
     const orderId = uuidv4();
@@ -164,6 +187,7 @@ app.post('/create-order', async (req, res) => {
 
     if (paymentMethod === 'mpesa') {
       if (!MPESA_CONSUMER_KEY || !MPESA_CONSUMER_SECRET || !MPESA_SHORTCODE || !MPESA_PASSKEY) {
+        console.warn('M-Pesa config incomplete');
         return res.status(400).json({ error: 'M-Pesa configuration is incomplete.' });
       }
       const accessToken = await getMpesaAccessToken();
@@ -180,8 +204,10 @@ app.post('/create-order', async (req, res) => {
           createdAt: new Date().toISOString(),
           mpesaRequestId: mpesaResponse.CheckoutRequestID
         });
+        console.log('M-Pesa order created – orderId:', orderId);
         res.json({ success: true, orderId, message: 'M-Pesa payment initiated. Please complete the payment on your phone.' });
       } else {
+        console.warn('M-Pesa initiation failed:', mpesaResponse);
         res.status(400).json({ error: 'M-Pesa payment initiation failed.' });
       }
     } else if (paymentMethod === 'cod' || paymentMethod === 'paypal') {
@@ -195,15 +221,21 @@ app.post('/create-order', async (req, res) => {
         status: 'Pending',
         createdAt: new Date().toISOString()
       });
+      console.log(`${paymentMethod.toUpperCase()} order created – orderId:`, orderId);
       res.json({ success: true, orderId, message: `Order placed successfully with ${paymentMethod === 'paypal' ? 'PayPal' : 'Cash on Delivery'}.` });
     } else {
+      console.warn('Invalid paymentMethod:', paymentMethod);
       res.status(400).json({ error: 'Invalid payment method.' });
     }
   } catch (error) {
-    console.error('Error creating order:', error);
+    console.error('=== /create-order ERROR ===');
+    console.error('Message :', error.message);
+    console.error('Stack   :', error.stack);
+    console.error('============================');
     res.status(500).json({ error: 'Internal Server Error.' });
   }
 });
+/* ---------- END /create-order LOGGING ---------- */
 
 app.get('/track-order/:id', async (req, res) => {
   if (!db) return res.status(503).json({ error: 'Database unavailable.' });
