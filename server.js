@@ -37,25 +37,48 @@ const app = express();
 const port = 10000;
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
-// MongoDB setup
+// MongoDB setup - ENHANCED WITH DETAILED LOGGING
 let db = null;
 async function connectToMongoDB() {
+  console.log('=== STARTING MONGODB CONNECTION ===');
+  console.log('MONGODB_URI present:', !!MONGODB_URI);
+  if (!MONGODB_URI) {
+    console.error('MONGODB_URI is missing! Cannot connect to database.');
+    return;
+  }
+
   let retries = 5;
   while (retries > 0) {
     try {
       console.log(`MongoDB connection attempt ${6 - retries}/5`);
-      const client = new MongoClient(MONGODB_URI, { serverSelectionTimeoutMS: 5000 });
+      const client = new MongoClient(MONGODB_URI, {
+        serverSelectionTimeoutMS: 10000,  // 10s timeout
+        connectTimeoutMS: 10000,
+        maxPoolSize: 10,
+        retryWrites: true,
+        w: 'majority'
+      });
+
       await client.connect();
-      console.log('Connected to MongoDB');
+      console.log('Connected to MongoDB Atlas successfully!');
       db = client.db('braviem');
+
+      // Test write to verify access
+      await db.collection('connection_test').insertOne({ test: true, timestamp: new Date() });
+      console.log('MongoDB write test passed');
       return;
     } catch (error) {
-      console.error(`MongoDB connection failed (attempt ${6 - retries}/5):`, error.message);
+      console.error(`MongoDB connection failed (attempt ${6 - retries}/5):`);
+      console.error('  Name:', error.name);
+      console.error('  Code:', error.code);
+      console.error('  Message:', error.message);
+      console.error('  Full:', JSON.stringify(error, null, 2));
       retries--;
       if (retries === 0) {
-        console.warn('MongoDB connection failed after 5 attempts. Continuing without MongoDB.');
+        console.error('All MongoDB connection attempts failed. Orders and ratings will be disabled.');
         return;
       }
+      console.log(`Retrying in 5 seconds... (${retries} attempts left)`);
       await new Promise(resolve => setTimeout(resolve, 5000));
     }
   }
@@ -71,7 +94,7 @@ app.use(express.json());
 app.use((req, res, next) => {
   res.setHeader(
     'Content-Security-Policy',
-    "default-src 'self'; script-src 'self' https://cdn.jsdelivr.net https://www.sandbox.paypal.com https://www.paypal.com 'unsafe-inline'; style-src 'self'; img-src 'self' https://via.placeholder.com https://*.aliexpress-media.com data:; connect-src 'self' https://ipapi.co https://v6.exchangerate-api.com https://www.sandbox.paypal.com https://www.paypal.com"
+    "default-src 'self'; script-src 'self' https://cdn.jsdelivr.net https://www.sandbox.paypal.com https://www.paypal.com 'unsafe-inline'; style-src 'self'; img-src 'self' https://via.placeholder.com https://*.aliexpress-media.com data: https://www.paypalobjects.com; frame-src 'self' https://www.sandbox.paypal.com; connect-src 'self' https://ipapi.co https://v6.exchangerate-api.com https://www.sandbox.paypal.com https://www.paypal.com"
   );
   next();
 });
@@ -258,6 +281,28 @@ app.get('/track-order/:id', async (req, res) => {
   }
 });
 
+/* ---------- DIAGNOSTIC: TEST DB CONNECTION ---------- */
+app.get('/test-db', async (req, res) => {
+  console.log('=== /test-db INVOKED ===');
+  console.log('MONGODB_URI present:', !!MONGODB_URI);
+  console.log('db connected:', !!db);
+  if (!db) {
+    return res.json({ connected: false, error: 'db is null' });
+  }
+  try {
+    const collections = await db.listCollections().toArray();
+    res.json({
+      connected: true,
+      collections: collections.map(c => c.name),
+      uri_preview: MONGODB_URI?.substring(0, 30) + '...'
+    });
+  } catch (err) {
+    console.error('test-db error:', err.message);
+    res.json({ connected: false, error: err.message });
+  }
+});
+/* ---------- END TEST DB ---------- */
+
 // M-Pesa Access Token
 async function getMpesaAccessToken() {
   const auth = Buffer.from(`${MPESA_CONSUMER_KEY}:${MPESA_CONSUMER_SECRET}`).toString('base64');
@@ -317,7 +362,7 @@ app.post('/mpesa-callback', async (req, res) => {
 // Exchange Rate Endpoint
 app.get('/api/exchange-rate', async (req, res) => {
   try {
-    const currency = req.query.currency || 'USD';
+    const currency = req.query.currency || 'USD';  // FIXED: Removed ".t"
     if (currency === 'USD') {
       return res.json({ rate: 1 });
     }
