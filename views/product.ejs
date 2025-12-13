@@ -1,4 +1,3 @@
-<!-- views/product.ejs -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -6,73 +5,90 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title><%= product.title %> | Braviem</title>
   <meta name="description" content="Buy <%= product.title %> at Braviem. Fast shipping and great prices.">
-  <link rel="icon" type="image/x-icon" href="/favicon.ico">
-  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
-  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
-  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
-  <link rel="manifest" href="/site.webmanifest">
+  <link rel="icon" href="/favicon.ico">
   <link rel="stylesheet" href="/css/style.css">
+
+  <!-- PAYPAL SDK — NOW WORKS BECAUSE clientId IS PASSED -->
+  <script defer src="https://www.sandbox.paypal.com/sdk/js?client-id=<%= clientId %>&currency=USD"></script>
 </head>
 <body>
   <header>
     <h1>Braviem</h1>
     <p><a href="/">Back to Home</a></p>
   </header>
+
   <main>
     <section>
       <h2><%= product.title %></h2>
+
+      <!-- PRODUCT CAROUSEL -->
       <div class="product-carousel" data-product-id="<%= product.id %>">
         <div class="carousel-main">
-          <img src="<%= product.images && product.images.length > 0 ? product.images[0] : 'https://via.placeholder.com/150' %>" 
-               alt="<%= product.title %> - Main Image" 
-               class="main-image" 
-               onerror="this.src='https://via.placeholder.com/150';">
+          <% if (product.images?.length > 0) { %>
+            <img src="<%= product.images[0] %>" alt="<%= product.title %>" class="main-image"
+                 onerror="this.src='https://placehold.co/600x600/orange/white?text=No+Image'">
+          <% } else { %>
+            <img src="https://placehold.co/600x600/orange/white?text=No+Image" alt="No Image" class="main-image">
+          <% } %>
         </div>
+
         <div class="carousel-thumbnails">
-          <% (product.images || []).slice(1).forEach((img, index) => { %>
+          <% (product.images || []).slice(1).forEach((img, i) => { %>
             <div class="carousel-slide thumbnail">
-              <img src="<%= img || 'https://via.placeholder.com/60' %>" 
-                   alt="<%= product.title %> - Thumbnail <%= index + 1 %>" 
-                   onerror="this.src='https://via.placeholder.com/60';">
+              <img src="<%= img %>" alt="<%= product.title %> - <%= i + 2 %>"
+                   onerror="this.src='https://placehold.co/80x80/orange/white?text=Img'">
             </div>
           <% }); %>
         </div>
       </div>
-      <p>Price: $<%= product.price.toFixed(2) %></p>
-      <p>SKU: <%= product.sku %></p>
-      <p>Category: <%= product.category %></p>
+
+      <!-- CURRENCY-CONVERTED PRICE -->
+      <p class="product-price">
+        Price: <strong data-price="<%= product.price %>">$<%= parseFloat(product.price).toFixed(2) %></strong>
+      </p>
+
+      <p>SKU: <%= product.sku || 'N/A' %></p>
+      <p>Category: <%= product.category || 'Uncategorized' %></p>
+
       <div class="terms-conditions">
         <label>
-          <input type="checkbox" id="termsCheckbox" required> I agree to the <a href="/terms">Terms and Conditions</a>
+          <input type="checkbox" id="termsCheckbox" required>
+          I agree to the <a href="/terms" target="_blank">Terms and Conditions</a>
         </label>
       </div>
+
       <button class="add-to-cart" data-product-id="<%= product.id %>" disabled>Add to Cart</button>
+
+      <!-- RATING SECTION -->
       <div class="rating-section">
         <h3>Rate this Product</h3>
         <form id="ratingForm">
           <select id="ratingValue" required>
             <option value="">Select Rating</option>
-            <option value="1">1 Star</option>
-            <option value="2">2 Stars</option>
-            <option value="3">3 Stars</option>
-            <option value="4">4 Stars</option>
             <option value="5">5 Stars</option>
+            <option value="4">4 Stars</option>
+            <option value="3">3 Stars</option>
+            <option value="2">2 Stars</option>
+            <option value="1">1 Star</option>
           </select>
-          <textarea id="ratingComment" placeholder="Your comment (optional)"></textarea>
-          <button type="submit" id="submitRating">Submit Rating</button>
-          <p id="ratingStatus" style="display: none;"></p>
+          <textarea id="ratingComment" placeholder="Your comment (optional)" rows="3"></textarea>
+          <button type="submit">Submit Rating</button>
+          <p id="ratingStatus" style="display:none;"></p>
         </form>
+
         <div class="ratings-list">
-          <% if (ratings && ratings.length > 0) { %>
+          <% if (ratings?.length > 0) { %>
             <% ratings.forEach(rating => { %>
               <div class="rating">
-                <p>Rating: 
-                  <% for (let i = 0; i < 5; i++) { %>
-                    <span class="star <%= i < rating.rating ? 'filled' : '' %>">★</span>
+                <p>Rating:
+                  <% for(let i = 1; i <= 5; i++) { %>
+                    <span class="star <%= i <= rating.rating ? 'filled' : '' %>">Star</span>
                   <% } %>
                 </p>
-                <p>Comment: <%= rating.comment || 'No comment' %></p>
-                <p>Date: <%= new Date(rating.timestamp).toLocaleString() %></p>
+                <% if (rating.comment) { %>
+                  <p><strong>Comment:</strong> <%= rating.comment %></p>
+                <% } %>
+                <p><small><%= new Date(rating.timestamp).toLocaleString() %></small></p>
               </div>
             <% }); %>
           <% } else { %>
@@ -82,66 +98,63 @@
       </div>
     </section>
   </main>
+
   <footer>
     <p>Shipping: 2–6 weeks via trusted partners.</p>
     <p>Licensed under the <a href="/license">MIT License</a>.</p>
   </footer>
+
+  <%- include('partials/cart') %>
+
   <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
   <script src="/js/products.js"></script>
   <script src="/js/script.js"></script>
+
+  <!-- INJECT CURRENT PRODUCT -->
   <script>
+    window.products = window.products || [];
+    window.cart = JSON.parse(localStorage.getItem('cart')) || {};
+
+    const currentProduct = {
+      id: "<%= product.id %>",
+      title: "<%= product.title.replace(/"/g, '\\"') %>",
+      price: Number(<%= product.price %>),
+      images: <%- JSON.stringify(product.images || []) %>
+    };
+
+    if (!window.products.find(p => p.id === currentProduct.id)) {
+      window.products.push(currentProduct);
+    }
+
     document.addEventListener('DOMContentLoaded', () => {
-      // Enable "Add to Cart" button when terms are checked
-      const termsCheckbox = document.getElementById('termsCheckbox');
-      const addToCartButton = document.querySelector('.add-to-cart');
-      termsCheckbox.addEventListener('change', () => {
-        addToCartButton.disabled = !termsCheckbox.checked;
-      });
+      const termsBox = document.getElementById('termsCheckbox');
+      const addBtn = document.querySelector('.add-to-cart');
 
-      // Handle "Add to Cart" click
-      addToCartButton.addEventListener('click', () => {
-        if (!addToCartButton.disabled) {
+      if (termsBox && addBtn) {
+        termsBox.addEventListener('change', () => addBtn.disabled = !termsBox.checked);
+        addBtn.addEventListener('click', () => {
+          if (addBtn.disabled) return;
           window.addToCart('<%= product.id %>');
-        }
-      });
+          alert('Added to cart!');
+        });
+      }
 
-      // Handle thumbnail clicks
-      document.querySelectorAll('.carousel-thumbnails .thumbnail img').forEach(thumb => {
-        thumb.addEventListener('click', (e) => {
-          const mainImage = document.querySelector('.carousel-main img');
-          mainImage.src = e.target.src;
-          mainImage.alt = e.target.alt;
+      document.querySelectorAll('.carousel-thumbnails img').forEach(thumb => {
+        thumb.style.cursor = 'pointer';
+        thumb.addEventListener('click', () => {
+          const main = document.querySelector('.carousel-main .main-image');
+          if (main) {
+            main.src = thumb.src;
+            main.alt = thumb.alt;
+          }
         });
       });
 
-      // Handle rating submission
-      const ratingForm = document.getElementById('ratingForm');
-      const ratingStatus = document.getElementById('ratingStatus');
-      ratingForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        ratingStatus.style.display = 'block';
-        ratingStatus.textContent = 'Submitting rating...';
-        const ratingValue = document.getElementById('ratingValue').value;
-        const ratingComment = document.getElementById('ratingComment').value;
-        try {
-          const response = await axios.post('/submit-rating', {
-            productId: '<%= product.id %>',
-            rating: ratingValue,
-            comment: ratingComment
-          });
-          if (response.data.success) {
-            ratingStatus.textContent = 'Rating submitted successfully!';
-            setTimeout(() => {
-              location.reload();
-            }, 1000);
-          } else {
-            ratingStatus.textContent = 'Failed to submit rating: ' + response.data.error;
-          }
-        } catch (error) {
-          console.error('Error submitting rating:', error.message);
-          ratingStatus.textContent = 'Failed to submit rating. Please try again.';
-        }
-      });
+      const mainImg = document.querySelector('.carousel-main .main-image');
+      if (mainImg) {
+        mainImg.style.cursor = 'zoom-in';
+        mainImg.addEventListener('click', () => window.open(mainImg.src, '_blank'));
+      }
     });
   </script>
 </body>

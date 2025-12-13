@@ -572,3 +572,11 @@ footer a:hover {
         padding-bottom: 60px;
     }
 }
+.thumbnail img {
+  cursor: pointer;
+  border: 2px solid transparent;
+  transition: border 0.2s;
+}
+.thumbnail img:hover {
+  border: 2px solid #ffcc00;
+}

@@ -1,67 +1,40 @@
+// public/js/products.js — FIXED & MINIMAL (only currency for product page)
 console.log('products.js loaded');
 
-window.addToCart = function(productId) {
-    const product = window.products.find(p => p.id === productId);
-    if (!product) {
-        console.error('Product not found for ID:', productId);
-        return;
-    }
-    if (!window.cart[productId]) {
-        window.cart[productId] = { ...product, quantity: 0 };
-    }
-    window.cart[productId].quantity += 1;
-    localStorage.setItem('cart', JSON.stringify(window.cart));
-    updateCartItems();
-    window.dispatchEvent(new Event('cartUpdated'));
-};
+window.cart = JSON.parse(localStorage.getItem('cart')) || {};
+window.products = window.products || [];
 
-window.updateCartTotal = function() {
-    const cartItems = document.getElementById('cartItems');
-    if (!cartItems) return;
-    let total = 0;
-    cartItems.innerHTML = '';
-    for (const productId in window.cart) {
-        const item = window.cart[productId];
-        total += item.price * item.quantity;
-        const li = document.createElement('li');
-        li.innerHTML = `
-            ${item.title} - $${item.price} x ${item.quantity}
-            <button class="remove-from-cart" data-product-id="${productId}">Remove</button>
-        `;
-        cartItems.appendChild(li);
-    }
-    document.getElementById('cartTotal').textContent = total.toFixed(2);
-    document.querySelectorAll('.remove-from-cart').forEach(button => {
-        button.addEventListener('click', (e) => {
-            const productId = e.currentTarget.getAttribute('data-product-id');
-            delete window.cart[productId];
-            localStorage.setItem('cart', JSON.stringify(window.cart));
-            updateCartItems();
-            window.dispatchEvent(new Event('cartUpdated'));
-        });
-    });
-};
+let currency = 'USD';
+let exchangeRate = 1;
 
-function updateCartItems() {
-    const cartItems = document.getElementById('cartItems');
-    if (!cartItems) return;
-    cartItems.innerHTML = '';
-    for (const productId in window.cart) {
-        const item = window.cart[productId];
-        const li = document.createElement('li');
-        li.innerHTML = `
-            ${item.title} - $${item.price} x ${item.quantity}
-            <button class="remove-from-cart" data-product-id="${productId}">Remove</button>
-        `;
-        cartItems.appendChild(li);
+// CURRENCY DETECTION — RUNS ON EVERY PAGE
+async function detectCurrency() {
+  try {
+    const res = await axios.get('https://ipapi.co/json/');
+    const code = res.data.country_code;
+    const map = { 'KE': 'KES', 'US': 'USD', 'GB': 'GBP', 'EU': 'EUR' };
+    currency = map[code] || 'USD';
+
+    if (currency !== 'USD') {
+      const rateRes = await axios.get('/api/exchange-rate', { params: { currency } });
+      exchangeRate = rateRes.data.rate || 1;
     }
-    document.querySelectorAll('.remove-from-cart').forEach(button => {
-        button.addEventListener('click', (e) => {
-            const productId = e.currentTarget.getAttribute('data-product-id');
-            delete window.cart[productId];
-            localStorage.setItem('cart', JSON.stringify(window.cart));
-            updateCartItems();
-            window.dispatchEvent(new Event('cartUpdated'));
-        });
-    });
+
+    // Update product page price
+    const priceEl = document.querySelector('.product-price strong');
+    if (priceEl) {
+      const price = parseFloat(priceEl.dataset.price || priceEl.textContent.replace(/[^0-9.]/g, ''));
+      priceEl.textContent = `${currency} ${(price * exchangeRate).toFixed(2)}`;
+    }
+
+    // Update cart if function exists
+    if (typeof window.updateCartTotal === 'function') {
+      window.updateCartTotal();
+    }
+  } catch (error) {
+    console.error('Currency detection failed:', error);
+  }
 }
+
+// Run it
+detectCurrency();

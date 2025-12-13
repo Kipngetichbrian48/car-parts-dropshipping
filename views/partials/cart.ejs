@@ -1,0 +1,34 @@
+<button id="cartIcon" title="View Cart">🛒</button>
+
+<div id="cartPanel" class="cart-panel">
+  <button id="closeCart" title="Close Cart">X</button>
+  <h2>Your Cart</h2>
+  <ul id="cartItems"></ul>
+  <p>Total: <span id="cartTotal">0.00</span></p>
+
+  <form id="checkoutForm">
+    <input type="text" id="name" placeholder="Name" required><br>
+    <input type="tel" id="phone" placeholder="Phone" required><br>
+    <input type="text" id="address" placeholder="Address" required><br>
+    <select id="paymentMethod" required>
+      <option value="paypal">PayPal</option>
+      <option value="cod">Cash on Delivery</option>
+    </select><br>
+    <div class="terms-conditions">
+      <label>
+        <input type="checkbox" id="termsCheckbox" required>
+        I agree to the <a href="/terms" target="_blank">Terms and Conditions</a>
+      </label>
+    </div>
+    <button type="submit" id="ignitePurchase">Ignite Your Purchase!</button>
+  </form>
+
+  <div id="cartPaypalButton"></div>
+
+  <h2>Track Your Order</h2>
+  <form id="trackOrderForm">
+    <input type="text" id="trackOrderId" placeholder="Enter Order ID" required>
+    <button type="submit">Track</button>
+  </form>
+  <div id="trackResult"></div>
+</div>
