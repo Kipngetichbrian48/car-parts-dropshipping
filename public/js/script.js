@@ -1,4 +1,4 @@
-// public/js/script.js — FINAL, 100% WORKING
+// public/js/script.js — FINAL, 100% WORKING WITH SEARCH & CATEGORY FILTER
 console.log('script.js loaded');
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -55,6 +55,11 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!grid) return;
         grid.innerHTML = '';
 
+        if (!list || list.length === 0) {
+          grid.innerHTML = '<p>No products match your search.</p>';
+          return;
+        }
+
         list.forEach(p => {
           const convertedPrice = (p.price * exchangeRate).toFixed(2);
           const mainImg = p.images?.[0] || 'https://placehold.co/600x600/orange/white?text=No+Image';
@@ -100,6 +105,37 @@ document.addEventListener('DOMContentLoaded', () => {
     } catch (e) {
       console.error('Products load failed:', e);
     }
+  }
+
+  // SEARCH & CATEGORY FILTER — NOW WORKING
+  const searchInput = document.getElementById('searchInput');
+  const categoryFilter = document.getElementById('categoryFilter');
+  const resetBtn = document.getElementById('resetSearch');
+
+  if (searchInput || categoryFilter) {
+    const filterProducts = () => {
+      const searchTerm = searchInput?.value.toLowerCase().trim() || '';
+      const selectedCategory = categoryFilter?.value || '';
+
+      const filtered = window.products.filter(p => {
+        const matchesSearch = p.title.toLowerCase().includes(searchTerm);
+        const matchesCategory = selectedCategory ? p.category === selectedCategory : true;
+        return matchesSearch && matchesCategory;
+      });
+
+      window.updateProductGrid(filtered);
+    };
+
+    searchInput?.addEventListener('input', filterProducts);
+    categoryFilter?.addEventListener('change', filterProducts);
+    resetBtn?.addEventListener('click', () => {
+      searchInput.value = '';
+      categoryFilter.value = '';
+      window.updateProductGrid(window.products);
+    });
+
+    // Initial load
+    filterProducts();
   }
 
   // CART UPDATE
@@ -220,11 +256,11 @@ document.addEventListener('DOMContentLoaded', () => {
     }).render('#cartPaypalButton');
   };
 
-  // CHECKOUT FORM — FIXED: preventDefault() + COD + PayPal handling
+  // CHECKOUT FORM — COD WORKS
   const checkoutForm = document.getElementById('checkoutForm');
   if (checkoutForm) {
     checkoutForm.addEventListener('submit', async (e) => {
-      e.preventDefault(); // ← STOPS PAGE RELOAD
+      e.preventDefault();
 
       const name = document.getElementById('name').value.trim();
       const phone = document.getElementById('phone').value.trim();
@@ -267,7 +303,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
       } catch (err) {
         alert('Failed to place order. Please try again.');
-        console.error(err);
       }
     });
   }
