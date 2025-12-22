@@ -1,4 +1,4 @@
-// public/js/script.js — FINAL, 100% WORKING WITH SEARCH & CATEGORY FILTER
+// public/js/script.js — FINAL WITH M-PESA OPTION REMOVED (temporary)
 console.log('script.js loaded');
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -9,7 +9,7 @@ document.addEventListener('DOMContentLoaded', () => {
   let exchangeRate = 1;
   let isPayPalInitialized = false;
 
-  // CURRENCY DETECTION — WORKS ON ALL PAGES
+  // CURRENCY DETECTION
   async function detectCurrency() {
     try {
       const res = await axios.get('https://ipapi.co/json/');
@@ -21,19 +21,16 @@ document.addEventListener('DOMContentLoaded', () => {
         exchangeRate = rateRes.data.rate || 1;
       }
 
-      // Update product page price
       const priceEl = document.querySelector('.product-price strong');
       if (priceEl) {
         const base = parseFloat(priceEl.dataset.price);
         priceEl.textContent = `${currency} ${(base * exchangeRate).toFixed(2)}`;
       }
 
-      // Update homepage grid
       if (typeof window.updateProductGrid === 'function') {
         window.updateProductGrid(window.products);
       }
 
-      // Update cart
       if (typeof window.updateCartTotal === 'function') {
         window.updateCartTotal();
       }
@@ -44,7 +41,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   detectCurrency();
 
-  // HOMEPAGE: PRODUCT GRID
+  // HOMEPAGE GRID & SEARCH
   const productsDataEl = document.getElementById('products-data');
   if (productsDataEl) {
     try {
@@ -107,7 +104,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  // SEARCH & CATEGORY FILTER — NOW WORKING
+  // SEARCH & CATEGORY FILTER
   const searchInput = document.getElementById('searchInput');
   const categoryFilter = document.getElementById('categoryFilter');
   const resetBtn = document.getElementById('resetSearch');
@@ -134,7 +131,6 @@ document.addEventListener('DOMContentLoaded', () => {
       window.updateProductGrid(window.products);
     });
 
-    // Initial load
     filterProducts();
   }
 
@@ -256,7 +252,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }).render('#cartPaypalButton');
   };
 
-  // CHECKOUT FORM — COD WORKS
+  // CHECKOUT FORM — M-PESA PHONE VALIDATION REMOVED (only PayPal & COD)
   const checkoutForm = document.getElementById('checkoutForm');
   if (checkoutForm) {
     checkoutForm.addEventListener('submit', async (e) => {
@@ -303,6 +299,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
       } catch (err) {
         alert('Failed to place order. Please try again.');
+        console.error(err);
       }
     });
   }

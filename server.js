@@ -1,4 +1,4 @@
-// server.js — FULLY UPDATED & 100% WORKING
+// server.js — FINAL WITH FULL M-PESA SUPPORT
 import express from 'express';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
@@ -16,8 +16,8 @@ const {
   EXCHANGE_RATE_API_KEY,
   MPESA_CONSUMER_KEY,
   MPESA_CONSUMER_SECRET,
-  MPESA_SHORTCODE,
-  MPESA_PASSKEY,
+  MPESA_SHORTCODE = '174379',  // default sandbox
+  MPESA_PASSKEY = 'bfb279f9aa9bdbcf158e97dd71a467cd2e0c893059b10f78e6b72ada1ed2c919',  // default sandbox
   MONGODB_URI
 } = process.env;
 
@@ -26,6 +26,8 @@ console.log('=== ENV CHECK ===');
 console.log('PAYPAL_CLIENT_ID      :', !!PAYPAL_CLIENT_ID ? 'present' : 'MISSING');
 console.log('PAYPAL_CLIENT_SECRET :', !!PAYPAL_CLIENT_SECRET ? 'present' : 'MISSING');
 console.log('MONGODB_URI           :', !!MONGODB_URI ? 'present' : 'MISSING');
+console.log('MPESA_SHORTCODE       :', MPESA_SHORTCODE || 'MISSING');
+console.log('MPESA_PASSKEY         :', MPESA_PASSKEY ? 'present' : 'MISSING');
 console.log('==================');
 
 /* ---------- MONGO CONNECTION ---------- */
@@ -77,7 +79,7 @@ app.use((req, res, next) => {
     "style-src 'self' 'unsafe-inline'; " +
     "img-src 'self' data: https:; " +
     "frame-src 'self' https://www.paypal.com https://www.sandbox.paypal.com; " +
-    "connect-src 'self' https://ipapi.co https://v6.exchangerate-api.com https://www.paypal.com https://www.sandbox.paypal.com"
+    "connect-src 'self' https://ipapi.co https://v6.exchangerate-api.com https://www.paypal.com https://www.sandbox.paypal.com https://sandbox.safaricom.co.ke"
   );
   next();
 });
@@ -111,7 +113,6 @@ app.get('/', (req, res) => {
   res.render('index', { products, clientId: PAYPAL_CLIENT_ID || 'YOUR_CLIENT_ID', categories: cats });
 });
 
-// FIXED: PASS clientId TO PRODUCT PAGE
 app.get('/product/:id', async (req, res) => {
   const product = products.find(p => p.id === req.params.id);
   if (!product) return res.status(404).render('error', { message: 'Product not found.' });
@@ -122,18 +123,16 @@ app.get('/product/:id', async (req, res) => {
     ratings = await db.collection('ratings').find({ productId: req.params.id }).toArray();
   }
 
-  // THIS WAS MISSING — NOW ADDED
   res.render('product', { 
     product, 
     ratings,
-    clientId: PAYPAL_CLIENT_ID  // ← THIS FIXES EVERYTHING
+    clientId: PAYPAL_CLIENT_ID
   });
 });
 
 app.get('/terms', (req, res) => res.render('terms'));
 app.get('/track-order', (req, res) => res.render('track-order'));
 
-/* ---------- ALL OTHER ROUTES (unchanged) ---------- */
 app.get('/test-db', async (req, res) => {
   const db = await getDb();
   if (!db) return res.json({ connected: false, error: 'Failed to connect' });
@@ -156,28 +155,69 @@ app.post('/submit-rating', async (req, res) => {
   res.json({ success: true });
 });
 
+/* ---------- CREATE ORDER — FULL M-PESA SUPPORT */
 app.post('/create-order', async (req, res) => {
   console.log('=== /create-order INVOKED ===');
   const db = await getDb();
   if (!db) return res.status(503).json({ error: 'Database unavailable.' });
 
   try {
-    const { name, phone, address, paymentMethod, cart } = req.body;
+    const { name, phone, address, paymentMethod, cart, totalUSD } = req.body;
     const orderId = uuidv4();
 
+    // Calculate total in USD
+    const totalInUSD = totalUSD || Object.values(cart).reduce((sum, item) => sum + item.price * item.quantity, 0);
+
     if (paymentMethod === 'mpesa') {
-      // ... your mpesa logic
+      if (!MPESA_CONSUMER_KEY || !MPESA_CONSUMER_SECRET || !MPESA_SHORTCODE || !MPESA_PASSKEY) {
+        return res.status(400).json({ error: 'M-Pesa configuration missing on server.' });
+      }
+
+      // Convert to KES (approximate rate, or use your exchange API)
+      const totalInKES = Math.round(totalInUSD * 130); // 1 USD ≈ 130 KES (adjust if needed)
+
+      if (totalInKES < 1) {
+        return res.status(400).json({ error: 'Amount too low for M-Pesa transaction.' });
+      }
+
+      const token = await getMpesaAccessToken();
+      const mpesaResponse = await initiateMpesaPayment(orderId, phone, totalInKES);
+
+      if (mpesaResponse.ResponseCode === '0') {
+        await db.collection('orders').insertOne({
+          orderId,
+          name,
+          phone,
+          address,
+          cart,
+          paymentMethod,
+          status: 'Pending',
+          createdAt: new Date().toISOString(),
+          mpesaRequestId: mpesaResponse.CheckoutRequestID,
+          amountKES: totalInKES
+        });
+
+        return res.json({ success: true, orderId });
+      } else {
+        console.error('M-Pesa initiation failed:', mpesaResponse);
+        return res.status(400).json({ error: 'M-Pesa request failed', details: mpesaResponse.ResponseDescription || mpesaResponse });
+      }
     }
 
-    if (paymentMethod === 'cod' || paymentMethod === 'paypal') {
-      await db.collection('orders').insertOne({
-        orderId, name, phone, address, cart, paymentMethod,
-        status: 'Pending', createdAt: new Date().toISOString()
-      });
-      return res.json({ success: true, orderId });
-    }
+    // COD or PayPal
+    await db.collection('orders').insertOne({
+      orderId,
+      name,
+      phone,
+      address,
+      cart,
+      paymentMethod,
+      status: 'Pending',
+      createdAt: new Date().toISOString()
+    });
 
-    res.status(400).json({ error: 'Invalid payment method.' });
+    return res.json({ success: true, orderId });
+
   } catch (e) {
     console.error('create-order error:', e.message);
     res.status(500).json({ error: 'Server error.' });
@@ -191,7 +231,69 @@ app.get('/track-order/:id', async (req, res) => {
   order ? res.json({ success: true, order }) : res.status(404).json({ error: 'Not found.' });
 });
 
-// ... rest of your M-Pesa and exchange rate routes (unchanged)
+/* ---------- M-PESA HELPERS ---------- */
+async function getMpesaAccessToken() {
+  const auth = Buffer.from(`${MPESA_CONSUMER_KEY}:${MPESA_CONSUMER_SECRET}`).toString('base64');
+  const { data } = await axios.get(
+    'https://sandbox.safaricom.co.ke/oauth/v1/generate?grant_type=client_credentials',
+    { headers: { Authorization: `Basic ${auth}` } }
+  );
+  return data.access_token;
+}
+
+async function initiateMpesaPayment(orderId, phone, amount) {
+  const token = await getMpesaAccessToken();
+  const timestamp = new Date().toISOString().replace(/[-:T.]/g, '').slice(0, 14);
+  const password = Buffer.from(`${MPESA_SHORTCODE}${MPESA_PASSKEY}${timestamp}`).toString('base64');
+
+  const payload = {
+    BusinessShortCode: MPESA_SHORTCODE,
+    Password: password,
+    Timestamp: timestamp,
+    TransactionType: 'CustomerPayBillOnline',
+    Amount: amount,
+    PartyA: phone,
+    PartyB: MPESA_SHORTCODE,
+    PhoneNumber: phone,
+    CallBackURL: 'https://braviem.com/mpesa-callback',  // Update when live
+    AccountReference: 'braviem.com',
+    TransactionDesc: 'Braviem car parts payment'
+  };
+
+  const { data } = await axios.post(
+    'https://sandbox.safaricom.co.ke/mpesa/stkpush/v1/processrequest',
+    payload,
+    { headers: { Authorization: `Bearer ${token}` } }
+  );
+
+  return data;
+}
+
+/* ---------- M-PESA CALLBACK ---------- */
+app.post('/mpesa-callback', async (req, res) => {
+  try {
+    const callbackData = req.body;
+    console.log('M-Pesa Callback:', JSON.stringify(callbackData, null, 2));
+
+    const { CheckoutRequestID, ResultCode } = callbackData.Body.stkCallback;
+
+    const db = await getDb();
+    if (db) {
+      const order = await db.collection('orders').findOne({ mpesaRequestId: CheckoutRequestID });
+      if (order) {
+        const status = ResultCode === 0 ? 'Paid' : 'Failed';
+        await db.collection('orders').updateOne(
+          { mpesaRequestId: CheckoutRequestID },
+          { $set: { status, mpesaCallback: callbackData, updatedAt: new Date().toISOString() } }
+        );
+      }
+    }
+    res.json({ ResultCode: 0, ResultDesc: 'Accepted' });
+  } catch (e) {
+    console.error('M-Pesa callback error:', e);
+    res.status(500).send('Error');
+  }
+});
 
 app.get('/api/exchange-rate', async (req, res) => {
   try {
