@@ -1,4 +1,4 @@
-// public/js/script.js — FINAL WITH M-PESA OPTION REMOVED (temporary)
+// public/js/script.js — FINAL WITH ALIEXPRESS-STYLE LOGIN MODAL (FIXED)
 console.log('script.js loaded');
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -252,7 +252,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }).render('#cartPaypalButton');
   };
 
-  // CHECKOUT FORM — M-PESA PHONE VALIDATION REMOVED (only PayPal & COD)
+  // CHECKOUT FORM — M-PESA REMOVED
   const checkoutForm = document.getElementById('checkoutForm');
   if (checkoutForm) {
     checkoutForm.addEventListener('submit', async (e) => {
@@ -328,6 +328,68 @@ document.addEventListener('DOMContentLoaded', () => {
         result.innerHTML = '<p>Error</p>';
       }
     });
+  }
+
+  // OPTIONAL GOOGLE LOGIN — ALIEXPRESS-STYLE MODAL
+  const loginLink = document.getElementById('loginLink');
+  const logoutLink = document.getElementById('logoutLink');
+  const userDisplay = document.getElementById('userDisplay');
+  const loginModal = document.getElementById('loginModal');
+  const googleLoginBtn = document.getElementById('googleLoginBtn');
+  const createAccountBtn = document.getElementById('createAccountBtn');
+  const forgotPassword = document.getElementById('forgotPassword');
+  const closeModal = document.getElementById('closeModal');
+
+  if (loginLink && loginModal && window.auth) {
+    window.onAuthStateChanged(window.auth, user => {
+      if (user) {
+        userDisplay.textContent = user.displayName || user.email.split('@')[0];
+        loginLink.style.display = 'none';
+        logoutLink.style.display = 'inline';
+      } else {
+        userDisplay.textContent = 'Guest';
+        loginLink.style.display = 'inline';
+        logoutLink.style.display = 'none';
+      }
+    });
+
+    // Open modal
+    loginLink.addEventListener('click', e => {
+      e.preventDefault();
+      loginModal.style.display = 'flex';
+    });
+
+    // Close modal
+    closeModal.addEventListener('click', () => {
+      loginModal.style.display = 'none';
+    });
+
+    // Sign in / Create account / Forgot password — all trigger Google for now
+    [googleLoginBtn, createAccountBtn, forgotPassword].forEach(btn => {
+      btn.addEventListener('click', e => {
+        e.preventDefault();
+        const provider = new window.GoogleAuthProvider();
+        window.signInWithPopup(window.auth, provider)
+          .then(result => {
+            console.log('Logged in:', result.user.displayName);
+            loginModal.style.display = 'none';
+          })
+          .catch(error => {
+            console.error('Login error:', error);
+            alert('Login failed: ' + error.message);
+          });
+      });
+    });
+
+    // Logout
+    logoutLink.addEventListener('click', e => {
+      e.preventDefault();
+      window.signOut(window.auth)
+        .then(() => console.log('Logged out'))
+        .catch(error => console.error('Logout error:', error));
+    });
+  } else {
+    console.warn('Firebase auth not loaded');
   }
 
   updateCartTotal();

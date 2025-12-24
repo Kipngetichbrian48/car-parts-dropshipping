@@ -75,11 +75,18 @@ app.use((req, res, next) => {
   res.setHeader(
     'Content-Security-Policy',
     "default-src 'self'; " +
-    "script-src 'self' https://cdn.jsdelivr.net https://www.paypal.com https://www.sandbox.paypal.com 'unsafe-inline'; " +
+    "script-src 'self' https://cdn.jsdelivr.net https://www.paypal.com https://www.sandbox.paypal.com " +
+    "https://www.gstatic.com https://www.googleapis.com https://apis.google.com 'unsafe-inline'; " +
     "style-src 'self' 'unsafe-inline'; " +
     "img-src 'self' data: https:; " +
-    "frame-src 'self' https://www.paypal.com https://www.sandbox.paypal.com; " +
-    "connect-src 'self' https://ipapi.co https://v6.exchangerate-api.com https://www.paypal.com https://www.sandbox.paypal.com https://sandbox.safaricom.co.ke"
+    "frame-src 'self' https://www.paypal.com https://www.sandbox.paypal.com " +
+    "https://braviem.firebaseapp.com https://accounts.google.com https://*.firebaseapp.com; " +  // ← FIXED: allows Google popup iframe
+    "connect-src 'self' https://ipapi.co https://v6.exchangerate-api.com https://www.paypal.com " +
+    "https://www.sandbox.paypal.com https://sandbox.safaricom.co.ke " +
+    "https://identitytoolkit.googleapis.com https://securetoken.googleapis.com " +
+    "https://www.googleapis.com https://firebaseinstallations.googleapis.com; " +
+    "font-src 'self' data:; " +
+    "manifest-src 'self'"
   );
   next();
 });
