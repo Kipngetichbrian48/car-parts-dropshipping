@@ -176,7 +176,7 @@
     const currentProduct = {
       id: "<%= product.id %>",
       title: "<%= product.title.replace(/"/g, '\\"') %>",
-      price: Number(<%= product.price %>),
+      price: (<%= product.price %>),
       images: <%- JSON.stringify(product.images || []) %>
     };
 

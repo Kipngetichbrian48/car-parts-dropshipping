@@ -46,23 +46,6 @@ header p {
     text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.8);
 }
 
-/* Christmas Bells - Temporary */
-header::before {
-    content: "🎄 🔔 🎅";
-    font-size: 1.8em;
-    position: absolute;
-    top: 20px;
-    left: 20px;
-    opacity: 0.9;
-    animation: bell-ring 3s infinite ease-in-out;
-}
-
-@keyframes bell-ring {
-    0%, 100% { transform: rotate(0deg); }
-    10%, 30%, 50%, 70%, 90% { transform: rotate(-10deg); }
-    20%, 40%, 60%, 80% { transform: rotate(10deg); }
-}
-
 /* Login area - far right */
 header > div:last-child {
     position: absolute;
