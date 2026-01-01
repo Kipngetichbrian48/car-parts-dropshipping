@@ -104,10 +104,9 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  // SEARCH & CATEGORY FILTER
+  // SEARCH & CATEGORY FILTER - LIVE SEARCH (no buttons)
   const searchInput = document.getElementById('searchInput');
   const categoryFilter = document.getElementById('categoryFilter');
-  const resetBtn = document.getElementById('resetSearch');
 
   if (searchInput || categoryFilter) {
     const filterProducts = () => {
@@ -123,14 +122,13 @@ document.addEventListener('DOMContentLoaded', () => {
       window.updateProductGrid(filtered);
     };
 
+    // Live search as user types
     searchInput?.addEventListener('input', filterProducts);
-    categoryFilter?.addEventListener('change', filterProducts);
-    resetBtn?.addEventListener('click', () => {
-      searchInput.value = '';
-      categoryFilter.value = '';
-      window.updateProductGrid(window.products);
-    });
 
+    // Live filter when category changes
+    categoryFilter?.addEventListener('change', filterProducts);
+
+    // Initial display
     filterProducts();
   }
 
