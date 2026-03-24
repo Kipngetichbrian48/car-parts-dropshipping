@@ -135,7 +135,7 @@
         </form>
 
         <div class="ratings-list">
-          <% if (ratings && ratings.length > 0) { %>
+          <% if (ratings?.length > 0) { %>
             <% ratings.forEach(rating => { %>
               <div class="rating">
                 <p>Rating:
@@ -168,7 +168,7 @@
   <script src="/js/products.js"></script>
   <script src="/js/script.js"></script>
 
-  <!-- INJECT CURRENT PRODUCT -->
+  <!-- INJECT CURRENT PRODUCT - FIXED -->
   <script>
     window.products = window.products || [];
     window.cart = JSON.parse(localStorage.getItem('cart')) || {};
@@ -213,54 +213,6 @@
       if (mainImg) {
         mainImg.style.cursor = 'zoom-in';
         mainImg.addEventListener('click', () => window.open(mainImg.src, '_blank'));
-      }
-
-      // FIXED RATING SUBMISSION
-      const ratingForm = document.getElementById('ratingForm');
-      const ratingStatus = document.getElementById('ratingStatus');
-
-      if (ratingForm) {
-        ratingForm.addEventListener('submit', async (e) => {
-          e.preventDefault();
-
-          const ratingValue = document.getElementById('ratingValue').value;
-          const comment = document.getElementById('ratingComment').value.trim();
-
-          if (!ratingValue) {
-            ratingStatus.textContent = 'Please select a rating.';
-            ratingStatus.style.color = '#ff4500';
-            ratingStatus.style.display = 'block';
-            return;
-          }
-
-          try {
-            const res = await axios.post('/submit-rating', {
-              productId: '<%= product.id %>',
-              rating: parseInt(ratingValue),
-              comment: comment
-            });
-
-            if (res.data.success) {
-              ratingStatus.textContent = 'Rating submitted successfully! Thank you.';
-              ratingStatus.style.color = '#ffcc00';
-              ratingStatus.style.display = 'block';
-
-              ratingForm.reset();
-
-              // Refresh to show the new rating
-              setTimeout(() => location.reload(), 1500);
-            } else {
-              ratingStatus.textContent = 'Failed to submit rating.';
-              ratingStatus.style.color = '#ff4500';
-              ratingStatus.style.display = 'block';
-            }
-          } catch (err) {
-            console.error('Rating error:', err);
-            ratingStatus.textContent = 'Network error. Please try again.';
-            ratingStatus.style.color = '#ff4500';
-            ratingStatus.style.display = 'block';
-          }
-        });
       }
     });
   </script>

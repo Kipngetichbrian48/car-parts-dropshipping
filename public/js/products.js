@@ -10,7 +10,7 @@ let exchangeRate = 1;
 // CURRENCY DETECTION — RUNS ON EVERY PAGE
 async function detectCurrency() {
   try {
-    const res = await axios.get('https://ipapi.co/json/');
+    const res = await axios.get('/api/ip');
     const code = res.data.country_code;
     const map = { 'KE': 'KES', 'US': 'USD', 'GB': 'GBP', 'EU': 'EUR' };
     currency = map[code] || 'USD';

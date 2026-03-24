@@ -12,7 +12,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // CURRENCY DETECTION
   async function detectCurrency() {
     try {
-      const res = await axios.get('https://ipapi.co/json/');
+      const res = await axios.get('/api/ip');
       const map = { 'KE': 'KES', 'US': 'USD', 'GB': 'GBP', 'EU': 'EUR' };
       currency = map[res.data.country_code] || 'USD';
 
