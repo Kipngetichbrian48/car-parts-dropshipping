@@ -117,7 +117,7 @@
 
       <button class="add-to-cart" data-product-id="<%= product.id %>" disabled>Add to Cart</button>
 
-      <!-- RATING SECTION -->
+      <!-- RATING SECTION - FIXED -->
       <div class="rating-section">
         <h3>Rate this Product</h3>
         <form id="ratingForm">
@@ -131,16 +131,16 @@
           </select>
           <textarea id="ratingComment" placeholder="Your comment (optional)" rows="3"></textarea>
           <button type="submit">Submit Rating</button>
-          <p id="ratingStatus" style="display:none;"></p>
+          <p id="ratingStatus" style="display:none; margin-top: 10px; font-weight: bold;"></p>
         </form>
 
-        <div class="ratings-list">
-          <% if (ratings?.length > 0) { %>
+        <div class="ratings-list" id="ratingsList">
+          <% if (ratings && ratings.length > 0) { %>
             <% ratings.forEach(rating => { %>
               <div class="rating">
                 <p>Rating:
                   <% for(let i = 1; i <= 5; i++) { %>
-                    <span class="star <%= i <= rating.rating ? 'filled' : '' %>">Star</span>
+                    <span class="star <%= i <= rating.rating ? 'filled' : '' %>">★</span>
                   <% } %>
                 </p>
                 <% if (rating.comment) { %>
@@ -168,7 +168,7 @@
   <script src="/js/products.js"></script>
   <script src="/js/script.js"></script>
 
-  <!-- INJECT CURRENT PRODUCT -->
+  <!-- INJECT CURRENT PRODUCT - FIXED -->
   <script>
     window.products = window.products || [];
     window.cart = JSON.parse(localStorage.getItem('cart')) || {};
@@ -176,7 +176,7 @@
     const currentProduct = {
       id: "<%= product.id %>",
       title: "<%= product.title.replace(/"/g, '\\"') %>",
-      price: (<%= product.price %>),
+      price: <%= product.price %>,
       images: <%- JSON.stringify(product.images || []) %>
     };
 
@@ -197,6 +197,7 @@
         });
       }
 
+      // Carousel thumbnails
       document.querySelectorAll('.carousel-thumbnails img').forEach(thumb => {
         thumb.style.cursor = 'pointer';
         thumb.addEventListener('click', () => {
@@ -212,6 +213,54 @@
       if (mainImg) {
         mainImg.style.cursor = 'zoom-in';
         mainImg.addEventListener('click', () => window.open(mainImg.src, '_blank'));
+      }
+
+      // FIXED RATING SUBMISSION
+      const ratingForm = document.getElementById('ratingForm');
+      const ratingStatus = document.getElementById('ratingStatus');
+
+      if (ratingForm) {
+        ratingForm.addEventListener('submit', async (e) => {
+          e.preventDefault();
+
+          const ratingValue = document.getElementById('ratingValue').value;
+          const comment = document.getElementById('ratingComment').value.trim();
+
+          if (!ratingValue) {
+            ratingStatus.textContent = 'Please select a rating.';
+            ratingStatus.style.color = '#ff4500';
+            ratingStatus.style.display = 'block';
+            return;
+          }
+
+          try {
+            const res = await axios.post('/submit-rating', {
+              productId: '<%= product.id %>',
+              rating: parseInt(ratingValue),
+              comment: comment
+            });
+
+            if (res.data.success) {
+              ratingStatus.textContent = 'Rating submitted successfully! Thank you.';
+              ratingStatus.style.color = '#ffcc00';
+              ratingStatus.style.display = 'block';
+
+              ratingForm.reset();
+
+              // Refresh to show new rating
+              setTimeout(() => location.reload(), 1500);
+            } else {
+              ratingStatus.textContent = 'Failed to submit rating.';
+              ratingStatus.style.color = '#ff4500';
+              ratingStatus.style.display = 'block';
+            }
+          } catch (err) {
+            console.error('Rating error:', err);
+            ratingStatus.textContent = 'Network error. Please try again.';
+            ratingStatus.style.color = '#ff4500';
+            ratingStatus.style.display = 'block';
+          }
+        });
       }
     });
   </script>

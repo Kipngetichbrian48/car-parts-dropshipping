@@ -90,6 +90,16 @@ app.use((req, res, next) => {
   );
   next();
 });
+// Proxy for ipapi.co to fix CORS error
+app.get('/api/ip', async (req, res) => {
+  try {
+    const response = await axios.get('https://ipapi.co/json/');
+    res.json(response.data);
+  } catch (e) {
+    console.error('IP API proxy failed:', e.message);
+    res.json({ country_code: 'US' }); // fallback to USD
+  }
+});
 
 /* ---------- LOAD PRODUCTS ---------- */
 const productsPath = join(__dirname, 'public', 'data', 'products.json');
