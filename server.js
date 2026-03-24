@@ -1,4 +1,4 @@
-// server.js — FINAL WITH FULL M-PESA SUPPORT
+// server.js — FINAL WITH FULL M-PESA SUPPORT + SECURE FIREBASE KEY
 import express from 'express';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
@@ -16,9 +16,10 @@ const {
   EXCHANGE_RATE_API_KEY,
   MPESA_CONSUMER_KEY,
   MPESA_CONSUMER_SECRET,
-  MPESA_SHORTCODE = '174379',  // default sandbox
-  MPESA_PASSKEY = 'bfb279f9aa9bdbcf158e97dd71a467cd2e0c893059b10f78e6b72ada1ed2c919',  // default sandbox
-  MONGODB_URI
+  MPESA_SHORTCODE,
+  MPESA_PASSKEY,
+  MONGODB_URI,
+  FIREBASE_API_KEY   // ← Added from .env
 } = process.env;
 
 /* ---------- ENV CHECK ---------- */
@@ -28,6 +29,7 @@ console.log('PAYPAL_CLIENT_SECRET :', !!PAYPAL_CLIENT_SECRET ? 'present' : 'MISS
 console.log('MONGODB_URI           :', !!MONGODB_URI ? 'present' : 'MISSING');
 console.log('MPESA_SHORTCODE       :', MPESA_SHORTCODE || 'MISSING');
 console.log('MPESA_PASSKEY         :', MPESA_PASSKEY ? 'present' : 'MISSING');
+console.log('FIREBASE_API_KEY      :', !!FIREBASE_API_KEY ? 'present' : 'MISSING');
 console.log('==================');
 
 /* ---------- MONGO CONNECTION ---------- */
@@ -80,7 +82,7 @@ app.use((req, res, next) => {
     "style-src 'self' 'unsafe-inline'; " +
     "img-src 'self' data: https:; " +
     "frame-src 'self' https://www.paypal.com https://www.sandbox.paypal.com " +
-    "https://braviem.firebaseapp.com https://accounts.google.com https://*.firebaseapp.com; " +  // ← FIXED: allows Google popup iframe
+    "https://braviem.firebaseapp.com https://accounts.google.com https://*.firebaseapp.com; " +
     "connect-src 'self' https://ipapi.co https://v6.exchangerate-api.com https://www.paypal.com " +
     "https://www.sandbox.paypal.com https://sandbox.safaricom.co.ke " +
     "https://identitytoolkit.googleapis.com https://securetoken.googleapis.com " +
@@ -117,7 +119,11 @@ if (existsSync(productsPath)) {
 /* ---------- ROUTES ---------- */
 app.get('/', (req, res) => {
   const cats = [...new Set(products.map(p => p.category))].sort();
-  res.render('index', { products, clientId: PAYPAL_CLIENT_ID || 'YOUR_CLIENT_ID', categories: cats });
+  res.render('index', { 
+    products, 
+    clientId: PAYPAL_CLIENT_ID || 'YOUR_CLIENT_ID', 
+    categories: cats 
+  });
 });
 
 app.get('/product/:id', async (req, res) => {
@@ -133,7 +139,8 @@ app.get('/product/:id', async (req, res) => {
   res.render('product', { 
     product, 
     ratings,
-    clientId: PAYPAL_CLIENT_ID
+    clientId: PAYPAL_CLIENT_ID,
+    firebaseApiKey: FIREBASE_API_KEY   // ← This was the missing piece
   });
 });
 
@@ -172,7 +179,6 @@ app.post('/create-order', async (req, res) => {
     const { name, phone, address, paymentMethod, cart, totalUSD } = req.body;
     const orderId = uuidv4();
 
-    // Calculate total in USD
     const totalInUSD = totalUSD || Object.values(cart).reduce((sum, item) => sum + item.price * item.quantity, 0);
 
     if (paymentMethod === 'mpesa') {
@@ -180,8 +186,7 @@ app.post('/create-order', async (req, res) => {
         return res.status(400).json({ error: 'M-Pesa configuration missing on server.' });
       }
 
-      // Convert to KES (approximate rate, or use your exchange API)
-      const totalInKES = Math.round(totalInUSD * 130); // 1 USD ≈ 130 KES (adjust if needed)
+      const totalInKES = Math.round(totalInUSD * 130);
 
       if (totalInKES < 1) {
         return res.status(400).json({ error: 'Amount too low for M-Pesa transaction.' });
@@ -211,7 +216,6 @@ app.post('/create-order', async (req, res) => {
       }
     }
 
-    // COD or PayPal
     await db.collection('orders').insertOne({
       orderId,
       name,
@@ -262,7 +266,7 @@ async function initiateMpesaPayment(orderId, phone, amount) {
     PartyA: phone,
     PartyB: MPESA_SHORTCODE,
     PhoneNumber: phone,
-    CallBackURL: 'https://braviem.com/mpesa-callback',  // Update when live
+    CallBackURL: 'https://braviem.com/mpesa-callback',
     AccountReference: 'braviem.com',
     TransactionDesc: 'Braviem car parts payment'
   };
