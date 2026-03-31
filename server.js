@@ -87,6 +87,7 @@ app.use((req, res, next) => {
     "https://www.sandbox.paypal.com https://sandbox.safaricom.co.ke " +
     "https://identitytoolkit.googleapis.com https://securetoken.googleapis.com " +
     "https://www.googleapis.com https://firebaseinstallations.googleapis.com; " +
+    "https://www.gstatic.com; " +
     "font-src 'self' data:; " +
     "manifest-src 'self'"
   );

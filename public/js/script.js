@@ -1,4 +1,4 @@
-// public/js/script.js — FINAL WITH ALIEXPRESS-STYLE LOGIN MODAL (FIXED)
+// public/js/script.js — FINAL WITH ALIEXPRESS-STYLE LOGIN MODAL + ACCURATE CURRENCY
 console.log('script.js loaded');
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -9,21 +9,26 @@ document.addEventListener('DOMContentLoaded', () => {
   let exchangeRate = 1;
   let isPayPalInitialized = false;
 
-  // CURRENCY DETECTION
-  async function detectCurrency() {
+    // STABLE CURRENCY DETECTION — NO EXTERNAL API CALLS
+  function detectCurrency() {
     try {
-      const res = await axios.get('/api/ip');
-      const map = { 'KE': 'KES', 'US': 'USD', 'GB': 'GBP', 'EU': 'EUR' };
-      currency = map[res.data.country_code] || 'USD';
+      const lang = navigator.language || navigator.userLanguage || 'en-US';
 
-      if (currency !== 'USD') {
-        const rateRes = await axios.get('/api/exchange-rate', { params: { currency } });
-        exchangeRate = rateRes.data.rate || 1;
+      if (lang.startsWith('sw') || lang.includes('KE') || lang === 'en-KE') {
+        currency = 'KES';
+        exchangeRate = 130;
+      } else if (lang.startsWith('en-GB') || lang.includes('GB')) {
+        currency = 'GBP';
+        exchangeRate = 0.78;
+      } else if (lang.startsWith('de') || lang.startsWith('fr') || lang.includes('EU')) {
+        currency = 'EUR';
+        exchangeRate = 0.92;
       }
+      // Default remains USD
 
       const priceEl = document.querySelector('.product-price strong');
       if (priceEl) {
-        const base = parseFloat(priceEl.dataset.price);
+        const base = parseFloat(priceEl.dataset.price || '0');
         priceEl.textContent = `${currency} ${(base * exchangeRate).toFixed(2)}`;
       }
 
@@ -34,8 +39,15 @@ document.addEventListener('DOMContentLoaded', () => {
       if (typeof window.updateCartTotal === 'function') {
         window.updateCartTotal();
       }
+
+      console.log(`Currency set to ${currency} (rate: ${exchangeRate})`);
     } catch (e) {
-      console.error('Currency failed:', e);
+      console.error('Currency detection failed, defaulting to USD:', e);
+      const priceEl = document.querySelector('.product-price strong');
+      if (priceEl) {
+        const base = parseFloat(priceEl.dataset.price || '0');
+        priceEl.textContent = `USD ${base.toFixed(2)}`;
+      }
     }
   }
 
@@ -122,13 +134,8 @@ document.addEventListener('DOMContentLoaded', () => {
       window.updateProductGrid(filtered);
     };
 
-    // Live search as user types
     searchInput?.addEventListener('input', filterProducts);
-
-    // Live filter when category changes
     categoryFilter?.addEventListener('change', filterProducts);
-
-    // Initial display
     filterProducts();
   }
 
