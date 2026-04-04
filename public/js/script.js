@@ -9,22 +9,30 @@ document.addEventListener('DOMContentLoaded', () => {
   let exchangeRate = 1;
   let isPayPalInitialized = false;
 
-    // STABLE CURRENCY DETECTION — NO EXTERNAL API CALLS
+  // STRONG KENYA DETECTION
   function detectCurrency() {
     try {
-      const lang = navigator.language || navigator.userLanguage || 'en-US';
+      const lang = (navigator.language || navigator.userLanguage || 'en-US').toLowerCase();
+      const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone || '';
 
-      if (lang.startsWith('sw') || lang.includes('KE') || lang === 'en-KE') {
+      if (
+        lang.includes('ke') || 
+        lang.startsWith('sw') || 
+        lang === 'en-ke' ||
+        timeZone.includes('Nairobi') ||
+        timeZone.includes('Africa')
+      ) {
         currency = 'KES';
         exchangeRate = 130;
-      } else if (lang.startsWith('en-GB') || lang.includes('GB')) {
+      } 
+      else if (lang.includes('gb') || lang.startsWith('en-gb')) {
         currency = 'GBP';
         exchangeRate = 0.78;
-      } else if (lang.startsWith('de') || lang.startsWith('fr') || lang.includes('EU')) {
+      } 
+      else if (lang.startsWith('fr') || lang.startsWith('de') || lang.includes('eu')) {
         currency = 'EUR';
         exchangeRate = 0.92;
       }
-      // Default remains USD
 
       const priceEl = document.querySelector('.product-price strong');
       if (priceEl) {
@@ -40,7 +48,7 @@ document.addEventListener('DOMContentLoaded', () => {
         window.updateCartTotal();
       }
 
-      console.log(`Currency set to ${currency} (rate: ${exchangeRate})`);
+      console.log(`Currency: ${currency} | Rate: ${exchangeRate} | Lang: ${lang} | TZ: ${timeZone}`);
     } catch (e) {
       console.error('Currency detection failed, defaulting to USD:', e);
       const priceEl = document.querySelector('.product-price strong');

@@ -1,4 +1,4 @@
-// public/js/products.js — STABLE CURRENCY (NO EXTERNAL API CALLS)
+// public/js/products.js — STRONG KENYA DETECTION
 console.log('products.js loaded');
 
 window.cart = JSON.parse(localStorage.getItem('cart')) || {};
@@ -7,22 +7,30 @@ window.products = window.products || [];
 let currency = 'USD';
 let exchangeRate = 1;
 
-// Simple, reliable currency detection using browser language + fallback
 function detectCurrency() {
   try {
-    const lang = navigator.language || navigator.userLanguage || 'en-US';
+    const lang = (navigator.language || navigator.userLanguage || 'en-US').toLowerCase();
+    const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone || '';
 
-    if (lang.startsWith('sw') || lang.includes('KE') || lang === 'en-KE') {
+    // Strong Kenyan detection
+    if (
+      lang.includes('ke') || 
+      lang.startsWith('sw') || 
+      lang === 'en-ke' ||
+      timeZone.includes('Nairobi') ||
+      timeZone.includes('Africa')
+    ) {
       currency = 'KES';
-      exchangeRate = 130; // Approximate rate for KES
-    } else if (lang.startsWith('en-GB') || lang.includes('GB')) {
+      exchangeRate = 130; // Current approximate rate
+    } 
+    else if (lang.includes('gb') || lang.startsWith('en-gb')) {
       currency = 'GBP';
       exchangeRate = 0.78;
-    } else if (lang.startsWith('de') || lang.startsWith('fr') || lang.includes('EU')) {
+    } 
+    else if (lang.startsWith('fr') || lang.startsWith('de') || lang.includes('eu')) {
       currency = 'EUR';
       exchangeRate = 0.92;
     }
-    // Default remains USD for most users
 
     // Update product page price
     const priceEl = document.querySelector('.product-price strong');
@@ -36,9 +44,14 @@ function detectCurrency() {
       window.updateCartTotal();
     }
 
-    console.log(`Currency set to ${currency} (rate: ${exchangeRate}) based on browser language`);
+    console.log(`Currency set to ${currency} (rate: ${exchangeRate}) | Lang: ${lang} | TZ: ${timeZone}`);
   } catch (error) {
     console.error('Currency detection failed, defaulting to USD:', error);
+    const priceEl = document.querySelector('.product-price strong');
+    if (priceEl) {
+      const price = parseFloat(priceEl.dataset.price || priceEl.textContent.replace(/[^0-9.]/g, ''));
+      priceEl.textContent = `USD ${price.toFixed(2)}`;
+    }
   }
 }
 
